@@ -13,8 +13,10 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        widget.cpp
+        widget.cpp \
+    cclientcontorler.cpp
 
-HEADERS  += widget.h
+HEADERS  += widget.h \
+    cclientcontorler.h
 
 FORMS    += widget.ui
