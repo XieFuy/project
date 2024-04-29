@@ -20,3 +20,6 @@ HEADERS  += widget.h \
     cclientcontorler.h
 
 FORMS    += widget.ui
+
+RESOURCES += \
+    res.qrc
