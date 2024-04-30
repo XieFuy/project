@@ -2,6 +2,12 @@
 #define WIDGET_H
 
 #include <QWidget>
+#include<QToolBar>
+#include<QLabel>
+#include<QPushButton>
+#include<QAction>
+#include<QVBoxLayout>
+#include<QSpacerItem>
 
 namespace Ui {
 class Widget;
@@ -17,6 +23,12 @@ public:
 
 private:
     Ui::Widget *ui;
+    QToolBar* m_toolBar = nullptr;
+    QLabel* m_infoLabel = nullptr;
+    QPushButton* m_updateBtn = nullptr;
+    QPushButton* m_remoteBtn = nullptr; //远程协助按钮
+    QPushButton* m_deviceListBtn = nullptr; //设备列表按钮
+    QPushButton* m_findMoreBtn = nullptr; //发现更多按钮
 };
 
 #endif // WIDGET_H
