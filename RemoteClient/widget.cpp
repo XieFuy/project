@@ -48,13 +48,17 @@ Widget::Widget(QWidget *parent) :
     //给工具栏添加第一个按钮
     this->m_remoteBtn = new QPushButton("远程协助", this->m_toolBar);
     this->m_remoteBtn->setIcon(QIcon(":/Icon.png"));
-    this->m_remoteBtn->setStyleSheet("QPushButton{background-color:rgb(41,41,41); color:rgb(224,224,224); width: 100px; height: 50px;text-align:left;font-size:20px;border: 2px solid rgb(41,41,41);border-radius:10px;}"); //只能通过qss来设置按钮大小
+    this->m_remoteBtn->setStyleSheet("QPushButton{background-color:rgb(41,41,41); color:rgb(224,224,224); width: 100px; height: 50px;text-align:left;font-size:20px;border: 2px solid rgb(41,41,41);border-radius:10px;} QPushButton:hover{background-color:rgb(53,53,53);border: 0.5px solid rgb(53,53,53);border-radius:10px;width: 100px; height: 50px;text-align:left;font-size:20px;color:rgb(224,224,224);}"); //只能通过qss来设置按钮大小
     this->m_toolBar->addWidget(this->m_remoteBtn);
 
     //点击第一个按钮，改变样式
     QObject::connect(this->m_remoteBtn,&QPushButton::clicked,[=](){
         this->m_remoteBtn->setIcon(QIcon(":/Icon2.png"));
         this->m_remoteBtn->setStyleSheet("QPushButton{background-color:rgb(53,53,53);border: 0.5px solid rgb(53,53,53);border-radius:10px;width: 100px; height: 50px;text-align:left;font-size:20px;color:rgb(224,224,224);}");
+        this->m_deviceListBtn->setStyleSheet("QPushButton{background-color:rgb(41,41,41); color:rgb(224,224,224); width: 100px; height: 50px;text-align:left;font-size:20px;border: 2px solid rgb(41,41,41);border-radius:10px;} QPushButton:hover{background-color:rgb(53,53,53);border: 0.5px solid rgb(53,53,53);border-radius:10px;width: 100px; height: 50px;text-align:left;font-size:20px;color:rgb(224,224,224);}");
+        this->m_deviceListBtn->setIcon(QIcon(":/IconDevice.png"));
+        this->m_findMoreBtn->setStyleSheet("QPushButton{background-color:rgb(41,41,41); color:rgb(224,224,224); width: 100px; height: 50px;text-align:left;font-size:20px;border: 2px solid rgb(41,41,41);border-radius:10px;} QPushButton:hover{background-color:rgb(53,53,53);border: 0.5px solid rgb(53,53,53);border-radius:10px;width: 100px; height: 50px;text-align:left;font-size:20px;color:rgb(224,224,224);}");
+        this->m_findMoreBtn->setIcon(QIcon(":/IconFindMore.png"));
     });
 
     //添加间隔
@@ -68,13 +72,17 @@ Widget::Widget(QWidget *parent) :
     //给工具栏添加第二个按钮
     this->m_deviceListBtn = new QPushButton("设备列表",this->m_toolBar);
     this->m_deviceListBtn->setIcon(QIcon(":/IconDevice.png"));
-    this->m_deviceListBtn->setStyleSheet("QPushButton{background-color:rgb(41,41,41); color:rgb(224,224,224); width: 100px; height: 50px;text-align:left;font-size:20px;border: 2px solid rgb(41,41,41);border-radius:10px;}");
+    this->m_deviceListBtn->setStyleSheet("QPushButton{background-color:rgb(41,41,41); color:rgb(224,224,224); width: 100px; height: 50px;text-align:left;font-size:20px;border: 2px solid rgb(41,41,41);border-radius:10px;} QPushButton:hover{background-color:rgb(53,53,53);border: 0.5px solid rgb(53,53,53);border-radius:10px;width: 100px; height: 50px;text-align:left;font-size:20px;color:rgb(224,224,224);}");//使用setstylesheet会覆盖原先的stylesheet
     this->m_toolBar->addWidget(this->m_deviceListBtn);
 
     //点击第二个菜单栏按钮时，改变样式
     QObject::connect(this->m_deviceListBtn,&QPushButton::clicked,[=](){
         this->m_deviceListBtn->setIcon(QIcon(":/IconDevice2.png"));
         this->m_deviceListBtn->setStyleSheet("QPushButton{background-color:rgb(53,53,53);border: 0.5px solid rgb(53,53,53);border-radius:10px;width: 100px; height: 50px;text-align:left;font-size:20px;color:rgb(224,224,224);}");
+        this->m_remoteBtn->setStyleSheet("QPushButton{background-color:rgb(41,41,41); color:rgb(224,224,224); width: 100px; height: 50px;text-align:left;font-size:20px;border: 2px solid rgb(41,41,41);border-radius:10px;} QPushButton:hover{background-color:rgb(53,53,53);border: 0.5px solid rgb(53,53,53);border-radius:10px;width: 100px; height: 50px;text-align:left;font-size:20px;color:rgb(224,224,224);}");
+        this->m_remoteBtn->setIcon(QIcon(":/Icon.png"));
+        this->m_findMoreBtn->setStyleSheet("QPushButton{background-color:rgb(41,41,41); color:rgb(224,224,224); width: 100px; height: 50px;text-align:left;font-size:20px;border: 2px solid rgb(41,41,41);border-radius:10px;} QPushButton:hover{background-color:rgb(53,53,53);border: 0.5px solid rgb(53,53,53);border-radius:10px;width: 100px; height: 50px;text-align:left;font-size:20px;color:rgb(224,224,224);}");
+        this->m_findMoreBtn->setIcon(QIcon(":/IconFindMore.png"));
     });
 
     //添加间隔
@@ -89,13 +97,17 @@ Widget::Widget(QWidget *parent) :
     //给工具栏添加第三个按钮
     this->m_findMoreBtn = new QPushButton("发现更多",this->m_toolBar);
     this->m_findMoreBtn->setIcon(QIcon(":/IconFindMore.png"));
-    this->m_findMoreBtn->setStyleSheet("QPushButton{background-color:rgb(41,41,41); color:rgb(224,224,224); width: 100px; height: 50px;text-align:left;font-size:20px;border: 2px solid rgb(41,41,41);border-radius:10px;}");
+    this->m_findMoreBtn->setStyleSheet("QPushButton{background-color:rgb(41,41,41); color:rgb(224,224,224); width: 100px; height: 50px;text-align:left;font-size:20px;border: 2px solid rgb(41,41,41);border-radius:10px;} QPushButton:hover{background-color:rgb(53,53,53);border: 0.5px solid rgb(53,53,53);border-radius:10px;width: 100px; height: 50px;text-align:left;font-size:20px;color:rgb(224,224,224);}");
     this->m_toolBar->addWidget(this->m_findMoreBtn);
 
     //点击第三个菜单按钮，改变样式
     QObject::connect(this->m_findMoreBtn,&QPushButton::clicked,[=](){
         this->m_findMoreBtn->setIcon(QIcon(":/IconFindMore2.png"));
         this->m_findMoreBtn->setStyleSheet("QPushButton{background-color:rgb(53,53,53);border: 0.5px solid rgb(53,53,53);border-radius:10px;width: 100px; height: 50px;text-align:left;font-size:20px;color:rgb(224,224,224);}");
+        this->m_remoteBtn->setStyleSheet("QPushButton{background-color:rgb(41,41,41); color:rgb(224,224,224); width: 100px; height: 50px;text-align:left;font-size:20px;border: 2px solid rgb(41,41,41);border-radius:10px;} QPushButton:hover{background-color:rgb(53,53,53);border: 0.5px solid rgb(53,53,53);border-radius:10px;width: 100px; height: 50px;text-align:left;font-size:20px;color:rgb(224,224,224);}");
+        this->m_remoteBtn->setIcon(QIcon(":/Icon.png"));
+        this->m_deviceListBtn->setStyleSheet("QPushButton{background-color:rgb(41,41,41); color:rgb(224,224,224); width: 100px; height: 50px;text-align:left;font-size:20px;border: 2px solid rgb(41,41,41);border-radius:10px;} QPushButton:hover{background-color:rgb(53,53,53);border: 0.5px solid rgb(53,53,53);border-radius:10px;width: 100px; height: 50px;text-align:left;font-size:20px;color:rgb(224,224,224);}");
+        this->m_deviceListBtn->setIcon(QIcon(":/IconDevice.png"));
     });
 }
 
