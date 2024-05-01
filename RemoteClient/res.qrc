@@ -7,5 +7,9 @@
         <file>IconDevice2.png</file>
         <file>IconFindMore.png</file>
         <file>IconFindMore2.png</file>
+        <file>IconLoginNum.png</file>
+        <file>IconLoginSee.png</file>
+        <file>IconRadio.png</file>
+        <file>IconRadio2.png</file>
     </qresource>
 </RCC>

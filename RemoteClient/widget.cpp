@@ -12,6 +12,12 @@ Widget::Widget(QWidget *parent) :
     this->setFixedSize(997,681);
     this->setStyleSheet("QWidget{background-color:rgb(18,18,18)}");
 
+    //显示stackWidget的内容
+    this->m_loginWidget = new CLoginWidget(ui->stackedWidget);
+    ui->stackedWidget->addWidget(this->m_loginWidget);
+    ui->stackedWidget->setCurrentIndex(2);
+    ui->stackedWidget->currentWidget()->show();
+
 
     //添加左侧ToolBar
     this->m_toolBar = new QToolBar(this);
@@ -109,6 +115,7 @@ Widget::Widget(QWidget *parent) :
         this->m_deviceListBtn->setStyleSheet("QPushButton{background-color:rgb(41,41,41); color:rgb(224,224,224); width: 100px; height: 50px;text-align:left;font-size:20px;border: 2px solid rgb(41,41,41);border-radius:10px;} QPushButton:hover{background-color:rgb(53,53,53);border: 0.5px solid rgb(53,53,53);border-radius:10px;width: 100px; height: 50px;text-align:left;font-size:20px;color:rgb(224,224,224);}");
         this->m_deviceListBtn->setIcon(QIcon(":/IconDevice.png"));
     });
+
 }
 
 Widget::~Widget()

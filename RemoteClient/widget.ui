@@ -25,6 +25,21 @@
   <property name="windowTitle">
    <string>Widget</string>
   </property>
+  <widget class="QStackedWidget" name="stackedWidget">
+   <property name="geometry">
+    <rect>
+     <x>240</x>
+     <y>180</y>
+     <width>751</width>
+     <height>491</height>
+    </rect>
+   </property>
+   <property name="currentIndex">
+    <number>1</number>
+   </property>
+   <widget class="QWidget" name="page"/>
+   <widget class="QWidget" name="page_2"/>
+  </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>

@@ -14,12 +14,15 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         widget.cpp \
-    cclientcontorler.cpp
+    cclientcontorler.cpp \
+    loginwidget.cpp
 
 HEADERS  += widget.h \
-    cclientcontorler.h
+    cclientcontorler.h \
+    loginwidget.h
 
-FORMS    += widget.ui
+FORMS    += widget.ui \
+    loginwidget.ui
 
 RESOURCES += \
     res.qrc

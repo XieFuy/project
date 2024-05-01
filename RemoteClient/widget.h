@@ -8,6 +8,7 @@
 #include<QAction>
 #include<QVBoxLayout>
 #include<QSpacerItem>
+#include"loginwidget.h"
 
 namespace Ui {
 class Widget;
@@ -29,6 +30,7 @@ private:
     QPushButton* m_remoteBtn = nullptr; //远程协助按钮
     QPushButton* m_deviceListBtn = nullptr; //设备列表按钮
     QPushButton* m_findMoreBtn = nullptr; //发现更多按钮
+    CLoginWidget* m_loginWidget = nullptr; //登录界面
 };
 
 #endif // WIDGET_H
