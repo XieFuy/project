@@ -2,6 +2,7 @@
 #define CCLIENTCONTORLER_H
 #include"widget.h"
 #include<QApplication>
+#include<windows.h>
 //控制层，将该类设计成饿汉式单例设计模式
 class CClientContorler
 {
@@ -11,6 +12,7 @@ public:
     Widget& getMainWidget();
     void CreateApplication(int argc,char* argv[]);
     QApplication& getApplication();
+    void sendCommmandPacket(WORD cmd,const BYTE* pData,size_t nSize,BOOL isAutoClosed); //发送数据接口
 private:
     QApplication* m_a;
     Widget* m_mainWidget;

@@ -15,14 +15,19 @@ TEMPLATE = app
 SOURCES += main.cpp\
         widget.cpp \
     cclientcontorler.cpp \
-    loginwidget.cpp
+    loginwidget.cpp \
+    clientsocket.cpp \
+    packet.cpp
 
 HEADERS  += widget.h \
     cclientcontorler.h \
-    loginwidget.h
+    loginwidget.h \
+    clientsocket.h \
+    packet.h
 
 FORMS    += widget.ui \
     loginwidget.ui
 
 RESOURCES += \
     res.qrc
+LIBS += -lws2_32  #qt 使用windowsAPI需要引入对应的库时需要再pro文件中引入

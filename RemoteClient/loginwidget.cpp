@@ -6,7 +6,7 @@ CLoginWidget::CLoginWidget(QWidget *parent) :
     ui(new Ui::CLoginWidget)
 {
     ui->setupUi(this);
-    //this->show();
+
 }
 
 CLoginWidget::~CLoginWidget()
