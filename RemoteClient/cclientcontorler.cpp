@@ -79,5 +79,22 @@ QApplication& CClientContorler::getApplication()
     return *(this->m_a);
 }
 
+BOOL CClientContorler::ConnectTest(QString strNum)
+{
+    if(strNum == "000")
+    {
+        CClientSocket* pClient =  CClientSocket::getInstance();
+        CPacket packet(1981,nullptr,0);
+        pClient->SendPacket(packet);
+        pClient->DealCommand(); //进行接收服务端回应的数据包
+        if(pClient->getPacket().getCmd() == 1981)
+        {
+            //提示连接成功
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
 CClientContorler* CClientContorler::m_instanse = nullptr;
 CClientContorler::CHelper CClientContorler::m_helper;

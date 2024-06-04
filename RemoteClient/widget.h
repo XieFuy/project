@@ -10,6 +10,8 @@
 #include<QSpacerItem>
 #include"loginwidget.h"
 
+class CLoginWidget;
+
 namespace Ui {
 class Widget;
 }

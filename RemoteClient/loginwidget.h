@@ -2,6 +2,8 @@
 #define LOGINWIDGET_H
 
 #include <QWidget>
+#include"cclientcontorler.h"
+#include<QMessageBox>
 
 namespace Ui {
 class CLoginWidget;

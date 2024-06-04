@@ -4,6 +4,7 @@ CClientSocket::CClientSocket()
 {
    qDebug()<<"网络模块初始化成功";
    this->m_sockClient = INVALID_SOCKET;
+   this->initSocketEnv();
 }
 
 CClientSocket* CClientSocket::getInstance()
@@ -78,6 +79,11 @@ BOOL CClientSocket::initSocket()
         qDebug()<<"socket init Error:"<<__FILE__<<__LINE__<<__FUNCTION__;
         return FALSE;
     }
+    memset(&this->m_sockClientAddr,0,sizeof(SOCKADDR_IN));
+    this->m_sockClientAddr.sin_port = htons(9527);
+    this->m_sockClientAddr.sin_family = AF_INET;
+    this->m_sockClientAddr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1"); //服务端的ip地址
+    return TRUE;
 }
 
 void CClientSocket::CloseSocket()
@@ -92,9 +98,68 @@ void CClientSocket::CloseSocket()
 WORD CClientSocket::DealCommand()
 {
     //TODO:实现处理服务端发送的数据
+    this->m_recvBuffer.clear();
+    this->m_recvBuffer.resize(1024);
+    //每次接收1024个字节
+    size_t alReadlyToRecv = 0;
+    size_t stepSize = 1024;
+    char* pData = this->m_recvBuffer.data();
 
+    //接收单个数据包的所有数据
+    while(true)
+    {
+        size_t ret =  recv(this->m_sockClient,pData+alReadlyToRecv,stepSize,0);
+        if(ret > 0)
+        {
+            alReadlyToRecv += ret;
+            this->m_recvBuffer.resize(alReadlyToRecv + stepSize);
+        }else
+        {
+            break;
+        }
+    }
 
+    std::string strData ;
+    for(std::vector<char>::iterator pos = this->m_recvBuffer.begin();pos != this->m_recvBuffer.end();pos++)
+    {
+        strData.push_back(*pos);
+    }
+    size_t dataSize = strData.size();
+    this->m_packet =  CPacket ((const BYTE*)strData.c_str(),dataSize);
+    return this->m_packet.getCmd();
 }
+
+size_t  CClientSocket::SendPacket(CPacket packet)
+{
+  BOOL ret =   this->initSocket();
+  if(!ret)
+  {
+      qDebug()<<"初始化套接字错误:"<<__FILE__<<__LINE__<<__FUNCTION__<<"错误码："<<WSAGetLastError();
+      return 0;
+  }
+  ret =  this->ConnectToServer();
+  if(!ret)
+  {
+      qDebug()<<"连接服务端错误:"<<__FILE__<<__LINE__<<__FUNCTION__<<"错误码："<<WSAGetLastError();
+      return 0;
+  }
+  return send(this->m_sockClient,(const char*)&packet,packet.getDataLenght()+6,0);
+}
+
+BOOL CClientSocket::ConnectToServer()
+{
+    if((connect(this->m_sockClient,(SOCKADDR*)&this->m_sockClientAddr,sizeof(SOCKADDR))) == INVALID_SOCKET)
+    {
+        qDebug()<<"客户端连接错误："<<__FILE__<<__LINE__<<__FUNCTION__;
+        return FALSE;
+    }
+    return TRUE;
+}
+
+ CPacket& CClientSocket::getPacket()
+ {
+     return this->m_packet;
+ }
 
 CClientSocket* CClientSocket::m_instance = nullptr;
 CClientSocket::CHelper CClientSocket::m_helper;
