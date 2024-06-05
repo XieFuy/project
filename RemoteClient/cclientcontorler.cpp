@@ -85,7 +85,7 @@ BOOL CClientContorler::ConnectTest(QString strNum)
     {
         CClientSocket* pClient =  CClientSocket::getInstance();
         CPacket packet(1981,nullptr,0);
-        pClient->SendPacket(packet);
+        size_t ret = pClient->SendPacket(packet);
         pClient->DealCommand(); //进行接收服务端回应的数据包
         if(pClient->getPacket().getCmd() == 1981)
         {

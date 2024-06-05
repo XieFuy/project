@@ -124,14 +124,17 @@ WORD CClientSocket::DealCommand()
     {
         strData.push_back(*pos);
     }
-    size_t dataSize = strData.size();
-    this->m_packet =  CPacket ((const BYTE*)strData.c_str(),dataSize);
+
+//    size_t dataSize = strData.size();
+//    this->m_packet =  CPacket ((const BYTE*)strData.c_str(),dataSize);
+    memset(&this->m_packet,0,sizeof(this->m_packet));
+    memcpy(&this->m_packet,strData.c_str(),alReadlyToRecv);
     return this->m_packet.getCmd();
 }
 
 size_t  CClientSocket::SendPacket(CPacket packet)
 {
-  BOOL ret =   this->initSocket();
+  BOOL ret =  this->initSocket();
   if(!ret)
   {
       qDebug()<<"初始化套接字错误:"<<__FILE__<<__LINE__<<__FUNCTION__<<"错误码："<<WSAGetLastError();
@@ -143,6 +146,7 @@ size_t  CClientSocket::SendPacket(CPacket packet)
       qDebug()<<"连接服务端错误:"<<__FILE__<<__LINE__<<__FUNCTION__<<"错误码："<<WSAGetLastError();
       return 0;
   }
+  CTestTool::Dump((const BYTE*)&packet,packet.getDataLenght()+6);
   return send(this->m_sockClient,(const char*)&packet,packet.getDataLenght()+6,0);
 }
 

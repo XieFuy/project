@@ -5,6 +5,7 @@
 #include"packet.h"
 #include<vector>
 #include<string>
+#include"ctesttool.h"
 //网络模块 饿汉式单例设计模式
 class CClientSocket
 {

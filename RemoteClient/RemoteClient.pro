@@ -17,17 +17,19 @@ SOURCES += main.cpp\
     cclientcontorler.cpp \
     loginwidget.cpp \
     clientsocket.cpp \
-    packet.cpp
+    packet.cpp \
+    ctesttool.cpp
 
 HEADERS  += widget.h \
     cclientcontorler.h \
     loginwidget.h \
     clientsocket.h \
-    packet.h
+    packet.h \
+    ctesttool.h
 
 FORMS    += widget.ui \
     loginwidget.ui
 
 RESOURCES += \
     res.qrc
-LIBS += -lws2_32  #qt 使用windowsAPI需要引入对应的库时需要再pro文件中引入
+LIBS += -lws2_32  #qt 使用windowsAPI需要引入对应的库时需要再pro文件中引�
