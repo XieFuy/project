@@ -82,7 +82,8 @@ BOOL CClientSocket::initSocket()
     memset(&this->m_sockClientAddr,0,sizeof(SOCKADDR_IN));
     this->m_sockClientAddr.sin_port = htons(9527);
     this->m_sockClientAddr.sin_family = AF_INET;
-    this->m_sockClientAddr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1"); //服务端的ip地址
+    this->m_sockClientAddr.sin_addr.S_un.S_addr = inet_addr("192.168.232.128"); //服务端的ip地址
+//    this->m_sockClientAddr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
     return TRUE;
 }
 
@@ -95,40 +96,37 @@ void CClientSocket::CloseSocket()
     }
 }
 
-WORD CClientSocket::DealCommand()
+WORD CClientSocket::DealCommand()   //应该是这里的效率问题
 {
     //TODO:实现处理服务端发送的数据
-    this->m_recvBuffer.clear();
-    this->m_recvBuffer.resize(1024);
+//    this->m_recvBuffer.clear();
+//    this->m_recvBuffer.resize(102400);
+    char* recvBuffer = new char[1024000];
+    memset(recvBuffer,0,sizeof(recvBuffer));
+
     //每次接收1024个字节
     size_t alReadlyToRecv = 0;
-    size_t stepSize = 1024;
-    char* pData = this->m_recvBuffer.data();
+    size_t stepSize = 102400;
+//    char* pData = this->m_recvBuffer.data();
+     char* pData = recvBuffer;
 
     //接收单个数据包的所有数据
     while(true)
     {
-        size_t ret =  recv(this->m_sockClient,pData+alReadlyToRecv,stepSize,0);
-        if(ret > 0)
+        int ret =  recv(this->m_sockClient,pData+alReadlyToRecv,stepSize,0);
+        if(ret > 0 )
         {
             alReadlyToRecv += ret;
-            this->m_recvBuffer.resize(alReadlyToRecv + stepSize);
+            //this->m_recvBuffer.resize(alReadlyToRecv + stepSize);
         }else
         {
+            qDebug()<<"num:"<<WSAGetLastError();
             break;
         }
     }
-
-    std::string strData ;
-    for(std::vector<char>::iterator pos = this->m_recvBuffer.begin();pos != this->m_recvBuffer.end();pos++)
-    {
-        strData.push_back(*pos);
-    }
-
-//    size_t dataSize = strData.size();
-//    this->m_packet =  CPacket ((const BYTE*)strData.c_str(),dataSize);
-    memset(&this->m_packet,0,sizeof(this->m_packet));
-    memcpy(&this->m_packet,strData.c_str(),alReadlyToRecv);
+//    this->m_packet = CPacket((const BYTE*)this->m_recvBuffer.data(),alReadlyToRecv);
+    this->m_packet = CPacket((const BYTE*)recvBuffer,alReadlyToRecv);
+    delete  []recvBuffer;
     return this->m_packet.getCmd();
 }
 
@@ -164,6 +162,21 @@ BOOL CClientSocket::ConnectToServer()
  {
      return this->m_packet;
  }
+
+
+  BOOL CClientSocket::ConnectTest()
+  {
+      CPacket packet(1981,nullptr,0);
+      size_t ret = this->SendPacket(packet);
+      this->DealCommand(); //进行接收服务端回应的数据包
+      if(this->getPacket().getCmd() == 1981)
+      {
+          //提示连接成功
+          return TRUE;
+      }
+      return FALSE;
+  }
+
 
 CClientSocket* CClientSocket::m_instance = nullptr;
 CClientSocket::CHelper CClientSocket::m_helper;

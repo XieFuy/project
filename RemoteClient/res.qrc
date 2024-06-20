@@ -11,5 +11,8 @@
         <file>IconLoginSee.png</file>
         <file>IconRadio.png</file>
         <file>IconRadio2.png</file>
+        <file>remoteWatch.png</file>
+        <file>lock.png</file>
+        <file>unlock.png</file>
     </qresource>
 </RCC>

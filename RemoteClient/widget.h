@@ -23,7 +23,7 @@ class Widget : public QWidget
 public:
     explicit Widget(QWidget *parent = 0);
     ~Widget();
-
+    CLoginWidget* m_loginWidget = nullptr; //登录界面
 private:
     Ui::Widget *ui;
     QToolBar* m_toolBar = nullptr;
@@ -32,7 +32,7 @@ private:
     QPushButton* m_remoteBtn = nullptr; //远程协助按钮
     QPushButton* m_deviceListBtn = nullptr; //设备列表按钮
     QPushButton* m_findMoreBtn = nullptr; //发现更多按钮
-    CLoginWidget* m_loginWidget = nullptr; //登录界面
+
 };
 
 #endif // WIDGET_H

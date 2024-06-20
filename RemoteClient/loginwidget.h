@@ -16,9 +16,12 @@ class CLoginWidget : public QWidget
 public:
     explicit CLoginWidget(QWidget *parent = 0);
     ~CLoginWidget();
+    QString getStrNum(); //获取连接码
+    void ShowScuessMessage(); //显示成功窗口
+    void ShowFailMessage();//显示失败窗口
 
 private:
-    Ui::CLoginWidget *ui;
+     Ui::CLoginWidget *ui;
 };
 
 #endif // LOGINWIDGET_H

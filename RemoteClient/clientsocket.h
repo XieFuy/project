@@ -15,6 +15,8 @@ public:
      WORD DealCommand(); //处理服务端发送过来的包数据 未实现
      void CloseSocket(); //关闭套接字
      CPacket& getPacket();
+     BOOL initSocket(); //初始化套接字
+     BOOL ConnectTest();
 private:
     SOCKET m_sockClient;
     SOCKADDR_IN m_sockClientAddr;
@@ -22,7 +24,7 @@ private:
     CPacket m_packet;
     BOOL ConnectToServer(); //连接服务端
     BOOL initSocketEnv(); //初始化套接字环境
-    BOOL initSocket(); //初始化套接字   
+
     static CClientSocket* m_instance;
     CClientSocket();
     ~CClientSocket();

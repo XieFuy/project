@@ -18,17 +18,20 @@ SOURCES += main.cpp\
     loginwidget.cpp \
     clientsocket.cpp \
     packet.cpp \
-    ctesttool.cpp
+    ctesttool.cpp \
+    watchdlg.cpp
 
 HEADERS  += widget.h \
     cclientcontorler.h \
     loginwidget.h \
     clientsocket.h \
     packet.h \
-    ctesttool.h
+    ctesttool.h \
+    watchdlg.h
 
 FORMS    += widget.ui \
-    loginwidget.ui
+    loginwidget.ui \
+    cwatchdlg.ui
 
 RESOURCES += \
     res.qrc

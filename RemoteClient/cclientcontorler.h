@@ -6,6 +6,7 @@
 #include<windows.h>
 #include"clientsocket.h"
 #include"packet.h"
+#include"watchdlg.h"
 
 class Widget;
 
@@ -20,9 +21,13 @@ public:
     QApplication& getApplication();
     void sendCommmandPacket(WORD cmd,const BYTE* pData,size_t nSize,BOOL isAutoClosed); //发送数据接口
     BOOL ConnectTest(QString strNum); //测试连接，参数传入识别码
+    void WatchScreen(QString strNum); //监控画面
+    static unsigned WINAPI threadEntrySendWatchPacket(LPVOID arg); //发送数据包入口线程函数
+    void threadSendWatchPacket();
 private:
+    CWatchDlg* m_watchDlg;
     QApplication* m_a;
-    Widget* m_mainWidget;
+    Widget* m_mainWidget; //主界面
     static CClientContorler* m_instanse; //实例对象指针
     static void releaseInstances(); //释放实例对象
     CClientContorler();

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CWatchDlg</class>
+ <widget class="QDialog" name="CWatchDlg">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1500</width>
+    <height>880</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>1500</width>
+    <height>880</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>1500</width>
+    <height>880</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <widget class="QPushButton" name="pushButton">
+   <property name="geometry">
+    <rect>
+     <x>1220</x>
+     <y>0</y>
+     <width>131</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">#pushButton
+{
+color:rgb(224,224,224);
+border:2px solid rgb(221,58,95);
+background-color:rgb(221,58,95);
+ border-radius:10px;
+}
+
+#pushButton:hover
+{
+color:rgb(224,224,224);
+border:2px solid rgb(53,53,53);
+background-color:rgb(53,53,53);
+border-radius:10px;
+}
+
+</string>
+   </property>
+   <property name="text">
+    <string>锁机</string>
+   </property>
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/lock.png</normaloff>:/lock.png</iconset>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButton_2">
+   <property name="geometry">
+    <rect>
+     <x>1360</x>
+     <y>0</y>
+     <width>131</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">#pushButton_2
+{
+color:rgb(224,224,224);
+border:2px solid rgb(221,58,95);
+background-color:rgb(221,58,95);
+ border-radius:10px;
+}
+
+#pushButton_2:hover
+{
+color:rgb(224,224,224);
+border:2px solid rgb(53,53,53);
+background-color:rgb(53,53,53);
+border-radius:10px;
+}</string>
+   </property>
+   <property name="text">
+    <string>解锁</string>
+   </property>
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/unlock.png</normaloff>:/unlock.png</iconset>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>39</y>
+     <width>1500</width>
+     <height>839</height>
+    </rect>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>1500</width>
+     <height>839</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>1500</width>
+     <height>839</height>
+    </size>
+   </property>
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+ </widget>
+ <resources>
+  <include location="res.qrc"/>
+ </resources>
+ <connections/>
+</ui>

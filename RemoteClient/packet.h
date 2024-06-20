@@ -2,6 +2,7 @@
 #define CPACKET_H
 #include<windows.h>
 #include<string>
+#include<QDebug>
 //数据包类，设计数据的自定义协议
 class CPacket
 {
@@ -13,6 +14,8 @@ public:
     CPacket& operator=(const CPacket& packet);
     WORD getCmd();
     DWORD getDataLenght(); //获取包的数据部分的长度
+    std::string& getData(); //获取包中的数据部分
+    void toByteData(std::string& data); //将整个包的数据转为二进制数据
 private:
     WORD m_head; //两个字节的包头
     DWORD m_packetDataLenght; //四字节的包数据的长度

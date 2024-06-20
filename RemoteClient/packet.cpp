@@ -119,3 +119,25 @@ DWORD CPacket::getDataLenght()
 {
     return this->m_packetDataLenght;
 }
+
+std::string& CPacket::getData()
+{
+    return this->data;
+}
+
+void CPacket::toByteData(std::string& data)
+{
+    data.resize(this->m_packetDataLenght + 6);
+    char* pData = (char*)data.c_str();
+    memcpy(pData,&this->m_head,sizeof(this->m_head));
+    pData += 2;
+    memcpy(pData,&this->m_packetDataLenght,sizeof(this->m_packetDataLenght));
+    pData += 4;
+    memcpy(pData,&this->m_cmd,sizeof(this->m_cmd));
+    pData += 2;
+    memcpy(pData,this->data.c_str(),this->data.size());
+    pData += this->data.size();
+    memcpy(pData, &this->m_Sum, sizeof(this->m_Sum));
+    pData += 2;
+    qDebug()<<"进行转换后整个包的数据长度为: "<<data.size();
+}
