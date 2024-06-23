@@ -144,15 +144,17 @@ size_t  CClientSocket::SendPacket(CPacket packet)
       qDebug()<<"连接服务端错误:"<<__FILE__<<__LINE__<<__FUNCTION__<<"错误码："<<WSAGetLastError();
       return 0;
   }
-  CTestTool::Dump((const BYTE*)&packet,packet.getDataLenght()+6);
-  return send(this->m_sockClient,(const char*)&packet,packet.getDataLenght()+6,0);
+  std::string data = "";
+  packet.toByteData(data);
+  CTestTool::Dump((const BYTE*)data.c_str(),data.size());
+  return send(this->m_sockClient,(const char*)data.c_str(),data.size(),0);
 }
 
 BOOL CClientSocket::ConnectToServer()
 {
     if((connect(this->m_sockClient,(SOCKADDR*)&this->m_sockClientAddr,sizeof(SOCKADDR))) == INVALID_SOCKET)
     {
-        qDebug()<<"客户端连接错误："<<__FILE__<<__LINE__<<__FUNCTION__;
+        qDebug()<<"客户端连接错误："<<__FILE__<<__LINE__<<__FUNCTION__<<WSAGetLastError();
         return FALSE;
     }
     return TRUE;
@@ -163,19 +165,18 @@ BOOL CClientSocket::ConnectToServer()
      return this->m_packet;
  }
 
-
-  BOOL CClientSocket::ConnectTest()
-  {
-      CPacket packet(1981,nullptr,0);
-      size_t ret = this->SendPacket(packet);
-      this->DealCommand(); //进行接收服务端回应的数据包
-      if(this->getPacket().getCmd() == 1981)
-      {
-          //提示连接成功
-          return TRUE;
-      }
-      return FALSE;
-  }
+ BOOL CClientSocket::ConnectTest()
+ {
+     CPacket packet(1981,nullptr,0);
+     size_t ret = this->SendPacket(packet);
+     this->DealCommand(); //进行接收服务端回应的数据包
+     if(this->getPacket().getCmd() == 1981)
+     {
+         //提示连接成功
+         return TRUE;
+     }
+     return FALSE;
+ }
 
 
 CClientSocket* CClientSocket::m_instance = nullptr;

@@ -19,7 +19,8 @@ SOURCES += main.cpp\
     clientsocket.cpp \
     packet.cpp \
     ctesttool.cpp \
-    watchdlg.cpp
+    watchdlg.cpp \
+    cmouseevent.cpp
 
 HEADERS  += widget.h \
     cclientcontorler.h \
@@ -27,7 +28,8 @@ HEADERS  += widget.h \
     clientsocket.h \
     packet.h \
     ctesttool.h \
-    watchdlg.h
+    watchdlg.h \
+    cmouseevent.h
 
 FORMS    += widget.ui \
     loginwidget.ui \

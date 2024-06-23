@@ -24,6 +24,7 @@ public:
     void WatchScreen(QString strNum); //监控画面
     static unsigned WINAPI threadEntrySendWatchPacket(LPVOID arg); //发送数据包入口线程函数
     void threadSendWatchPacket();
+    void SendMouseEventPacket(QPoint point); //进行鼠标操作请求指令发送  
 private:
     CWatchDlg* m_watchDlg;
     QApplication* m_a;

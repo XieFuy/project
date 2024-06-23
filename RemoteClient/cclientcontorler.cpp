@@ -95,7 +95,6 @@ void CClientContorler::WatchScreen(QString strNum)
     //生成模态对话框对象
 
     //进行生成一个线程进行向服务端发送数据请求
-
     this->m_watchDlg = new CWatchDlg();
     _beginthreadex(nullptr,0,&CClientContorler::threadEntrySendWatchPacket,nullptr,0,nullptr);
     this->m_watchDlg->exec();
@@ -109,12 +108,22 @@ unsigned WINAPI CClientContorler::threadEntrySendWatchPacket(LPVOID arg)
     return 0;
 }
 
+void CClientContorler::SendMouseEventPacket(QPoint point)
+{
+
+}
+
 void CClientContorler::threadSendWatchPacket()
 {
     CClientSocket* pClient = CClientSocket::getInstance();
     Sleep(100);  //休眠进行界面先进行显示
-    while(this->m_watchDlg->m_frameIsClosed == FALSE)
+    while(this->m_watchDlg->m_frameIsClosed == FALSE )
     {
+        if(this->m_watchDlg->m_isMouseMove.load() == true)
+        {
+            continue;
+        }
+        qDebug()<<"屏幕显示发送数据执行！";
         BOOL ret =  pClient->initSocket();
         if(!ret)
         {
@@ -123,15 +132,16 @@ void CClientContorler::threadSendWatchPacket()
         }
         pClient->SendPacket(CPacket(7,nullptr,0));
         pClient->DealCommand();
+        pClient->CloseSocket();
         this->m_watchDlg->m_ScreenImageDataBuf.resize(pClient->getPacket().getData().size());
         memset(this->m_watchDlg->m_ScreenImageDataBuf.data(),0,this->m_watchDlg->m_ScreenImageDataBuf.size());
         memcpy(this->m_watchDlg->m_ScreenImageDataBuf.data(),pClient->getPacket().getData().c_str(),pClient->getPacket().getData().size()); //这里进行了共享资源的访问，需要进行互斥
         this->m_watchDlg->m_isFull = TRUE;//这里进行了共享资源的访问，需要进行互斥锁
-        pClient->CloseSocket();
         SetEvent(this->m_watchDlg->m_Event);
         ResetEvent(this->m_watchDlg->m_Event);
         WaitForSingleObject(this->m_watchDlg->m_Event,INFINITE);
     }
+    SetEvent(this->m_watchDlg->m_CloseEvent);
 }
 
 

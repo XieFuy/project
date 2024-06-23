@@ -19,7 +19,6 @@ public:
     QString getStrNum(); //获取连接码
     void ShowScuessMessage(); //显示成功窗口
     void ShowFailMessage();//显示失败窗口
-
 private:
      Ui::CLoginWidget *ui;
 };
