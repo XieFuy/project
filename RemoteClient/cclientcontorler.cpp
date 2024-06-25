@@ -119,17 +119,7 @@ void CClientContorler::threadSendWatchPacket()
     Sleep(100);  //休眠进行界面先进行显示
     while(this->m_watchDlg->m_frameIsClosed == FALSE )
     {
-        if(this->m_watchDlg->m_isMouseMove.load() == true)
-        {
-            continue;
-        }
         qDebug()<<"屏幕显示发送数据执行！";
-        BOOL ret =  pClient->initSocket();
-        if(!ret)
-        {
-            qDebug()<<"套接字初始化错误"<<__FILE__<<__LINE__<<__FUNCTION__<<"错误码："<<WSAGetLastError();
-            return ;
-        }
         pClient->SendPacket(CPacket(7,nullptr,0));
         pClient->DealCommand();
         pClient->CloseSocket();

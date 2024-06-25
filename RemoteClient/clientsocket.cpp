@@ -67,6 +67,26 @@ BOOL CClientSocket::initSocketEnv()
     return TRUE;
 }
 
+BOOL CClientSocket::initSocketMouseEvent()
+{
+    if(this->m_sockClientMouseEvent != INVALID_SOCKET)
+    {
+        this->CloseSocketMouseEvent();
+    }
+    this->m_sockClientMouseEvent = socket(AF_INET,SOCK_STREAM,0);
+    if(SOCKET_ERROR == this->m_sockClientMouseEvent)
+    {
+        qDebug()<<"socket init Error:"<<__FILE__<<__LINE__<<__FUNCTION__;
+        return FALSE;
+    }
+    memset(&this->m_sockClientAddrMouseEvent,0,sizeof(SOCKADDR_IN));
+    this->m_sockClientAddrMouseEvent.sin_port = htons(8888);
+    this->m_sockClientAddrMouseEvent.sin_family = AF_INET;
+    this->m_sockClientAddrMouseEvent.sin_addr.S_un.S_addr = inet_addr("192.168.232.128"); //服务端的ip地址
+//    this->m_sockClientAddrMouseEvent.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
+    return TRUE;
+}
+
 BOOL CClientSocket::initSocket()
 {
     if(this->m_sockClient != INVALID_SOCKET)
@@ -94,6 +114,44 @@ void CClientSocket::CloseSocket()
         closesocket(this->m_sockClient);
         this->m_sockClient = INVALID_SOCKET;
     }
+}
+
+void CClientSocket::CloseSocketMouseEvent()
+{
+    if(this->m_sockClientMouseEvent!= INVALID_SOCKET)
+    {
+        closesocket(this->m_sockClientMouseEvent);
+        this->m_sockClientMouseEvent = INVALID_SOCKET;
+    }
+}
+
+WORD CClientSocket::DealCommandMouseEvent()
+{
+    //TODO:实现处理服务端发送的数据
+    char* recvBuffer = new char[1024000];
+    memset(recvBuffer,0,sizeof(recvBuffer));
+
+    //每次接收1024个字节
+    size_t alReadlyToRecv = 0;
+    size_t stepSize = 102400;
+    char* pData = recvBuffer;
+
+    //接收单个数据包的所有数据
+    while(true)
+    {
+        int ret =  recv(this->m_sockClientMouseEvent,pData+alReadlyToRecv,stepSize,0);
+        if(ret > 0 )
+        {
+            alReadlyToRecv += ret;
+        }else
+        {
+            qDebug()<<"num:"<<WSAGetLastError();
+            break;
+        }
+    }
+    this->m_packetMouseEvent = CPacket((const BYTE*)recvBuffer,alReadlyToRecv);
+    delete  []recvBuffer;
+    return this->m_packetMouseEvent.getCmd();
 }
 
 WORD CClientSocket::DealCommand()   //应该是这里的效率问题
@@ -130,6 +188,26 @@ WORD CClientSocket::DealCommand()   //应该是这里的效率问题
     return this->m_packet.getCmd();
 }
 
+size_t CClientSocket::SendPacketMouseEvent(CPacket packet)
+{
+    BOOL ret =  this->initSocketMouseEvent();
+    if(!ret)
+    {
+        qDebug()<<"初始化套接字错误:"<<__FILE__<<__LINE__<<__FUNCTION__<<"错误码："<<WSAGetLastError();
+        return 0;
+    }
+    ret =  this->ConnectToServerMouseEvent();
+    if(!ret)
+    {
+        qDebug()<<"连接服务端错误:"<<__FILE__<<__LINE__<<__FUNCTION__<<"错误码："<<WSAGetLastError();
+        return 0;
+    }
+    std::string data = "";
+    packet.toByteData(data);
+    CTestTool::Dump((const BYTE*)data.c_str(),data.size());
+    return send(this->m_sockClientMouseEvent,(const char*)data.c_str(),data.size(),0);
+}
+
 size_t  CClientSocket::SendPacket(CPacket packet)
 {
   BOOL ret =  this->initSocket();
@@ -148,6 +226,16 @@ size_t  CClientSocket::SendPacket(CPacket packet)
   packet.toByteData(data);
   CTestTool::Dump((const BYTE*)data.c_str(),data.size());
   return send(this->m_sockClient,(const char*)data.c_str(),data.size(),0);
+}
+
+BOOL CClientSocket::ConnectToServerMouseEvent()
+{
+    if((connect(this->m_sockClientMouseEvent,(SOCKADDR*)&this->m_sockClientAddrMouseEvent,sizeof(SOCKADDR))) == SOCKET_ERROR)
+    {
+        qDebug()<<"客户端连接错误："<<__FILE__<<__LINE__<<__FUNCTION__<<WSAGetLastError();
+        return FALSE;
+    }
+    return TRUE;
 }
 
 BOOL CClientSocket::ConnectToServer()
