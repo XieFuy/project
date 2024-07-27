@@ -100,6 +100,16 @@ void CClientContorler::WatchScreen(QString strNum)
     this->m_watchDlg->exec();
 }
 
+void CClientContorler::RemoteFileOperator(QString num)
+{
+    if(this->m_fileOperatorDlg == nullptr)
+    {
+        this->m_fileOperatorDlg = new CFileOperatorDlg();
+        this->m_fileOperatorDlg->exec();//生成模态对话框
+    }
+    this->m_fileOperatorDlg = nullptr;
+}
+
 unsigned WINAPI CClientContorler::threadEntrySendWatchPacket(LPVOID arg)
 {
     CClientContorler* pCtl = CClientContorler::getInstances();

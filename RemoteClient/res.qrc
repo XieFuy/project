@@ -14,5 +14,16 @@
         <file>remoteWatch.png</file>
         <file>lock.png</file>
         <file>unlock.png</file>
+        <file>direct.png</file>
+        <file>fileTitle.png</file>
+        <file>title.png</file>
+        <file>back.png</file>
+        <file>up.png</file>
+        <file>home.png</file>
+        <file>refalsh.png</file>
+        <file>search.png</file>
+        <file>disk.png</file>
+        <file>comboxDowm.png</file>
+        <file>comboxUp.png</file>
     </qresource>
 </RCC>

@@ -20,7 +20,8 @@ SOURCES += main.cpp\
     packet.cpp \
     ctesttool.cpp \
     watchdlg.cpp \
-    cmouseevent.cpp
+    cmouseevent.cpp \
+    fileoperatordlg.cpp
 
 HEADERS  += widget.h \
     cclientcontorler.h \
@@ -29,11 +30,13 @@ HEADERS  += widget.h \
     packet.h \
     ctesttool.h \
     watchdlg.h \
-    cmouseevent.h
+    cmouseevent.h \
+    fileoperatordlg.h
 
 FORMS    += widget.ui \
     loginwidget.ui \
-    cwatchdlg.ui
+    cwatchdlg.ui \
+    cfileoperatordlg.ui
 
 RESOURCES += \
     res.qrc

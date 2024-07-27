@@ -35,6 +35,9 @@ CLoginWidget::CLoginWidget(QWidget *parent) :
          if(ui->radioButton_2->isChecked())
          {
              qDebug()<<"选择的是远程文件";
+             CClientContorler* pCtl = CClientContorler::getInstances();
+             pCtl->RemoteFileOperator(ui->lineEdit_2->text());
+
          }
         }
     });
