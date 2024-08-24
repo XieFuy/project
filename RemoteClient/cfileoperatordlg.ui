@@ -683,6 +683,188 @@ QComboBox QAbstractItemView{
       <height>350</height>
      </rect>
     </property>
+    <property name="styleSheet">
+     <string notr="true">/* 设置QTableView表头的背景颜色和文字颜色 */  
+QTableView QHeaderView::section {  
+    background-color:rgb(236,239,246); /* 背景色 */  
+    color: rgb(155,155,155);         /* 文字颜色 */
+    height:40px;  
+    padding-left: 4px;    /* 左内边距 */  
+    padding-right: 4px;   /* 右内边距 */  
+    border-left: 1px solid #555; /* 左边框 */  
+    border-right: 1px solid #555; /* 右边框 */  
+}  
+  
+/* 当鼠标悬停在表头部分时 */  
+QTableView QHeaderView::section:hover {  
+  /*  background-color: #555; /* 鼠标悬停时的背景色 */  
+}  
+  
+/* 表头被选中的样式 */  
+QTableView QHeaderView::section:selected {  
+    background-color: #a6cafe; /* 选中时的背景色 */  
+    color: black;             /* 选中时的文字颜色 */  
+}  
+  
+/* 当表头不可用时（比如某个方向被禁用） */  
+QTableView QHeaderView::section:disabled {  
+    color: gray; /* 禁用时的文字颜色 */  
+}  
+  
+/* 垂直表头的样式 */  
+QTableView QHeaderView::section:vertical {  
+    border-top: 1px solid #555; /* 上边框 */  
+    border-bottom: 1px solid #555; /* 下边框 */   
+}  
+  
+/* 表头的分隔线样式（注意：这个可能需要结合具体的Qt版本和平台来看是否支持） */  
+QTableView QHeaderView::separator {  
+    background-color: rgb(0,0,0); /* 分隔线颜色 */  
+    width: 3px;              /* 分隔线宽度 */  
+    height: 3px;             /* 垂直分隔线的高度（对于水平分隔线可能不适用） */  
+}</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QTabWidget" name="tabWidget">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>580</y>
+     <width>1691</width>
+     <height>321</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QTabWidget {  
+}  
+  
+QTabBar {  
+    /* 设置标签栏的整体样式 */  
+    background-color: #f0f0f0; /* 背景颜色 */  
+    border: 1px solid #d3d3d3; /* 边框 */  
+}  
+  
+QTabBar::tab {  
+    /* 设置每个标签的样式 */  
+    /*background-color: #e0e0e0;*/ /* 背景颜色 */ 
+    background-color:rgba(0,0,0,0); 
+    color: black; /* 文字颜色 */  
+    padding: 5px; /* 内边距 */  
+    /*border: 1px solid transparent;*/ /* 边框，初始设置为透明，以便在选中时更改 */  
+    border: none;
+    border-bottom-right-radius: 4px; /* 右下圆角（如果需要） */  
+    border-top-right-radius: 4px; /* 右上圆角（如果需要） */  
+    min-width: 80px; /* 最小宽度 */  
+}  
+  
+QTabBar::tab:selected {  
+    /* 设置选中标签的样式 */  
+    background-color: #3399ff; /* 选中时的背景颜色 */  
+    color: white; /* 选中时的文字颜色 */  
+    border-color: #3399ff; /* 选中时的边框颜色 */  
+}  
+  
+QTabBar::tab:hover {  
+    /* 设置鼠标悬停在标签上的样式 */  
+    background-color: #99ccff; /* 悬停时的背景颜色 */  
+}  </string>
+   </property>
+   <property name="currentIndex">
+    <number>0</number>
+   </property>
+   <widget class="QWidget" name="tab">
+    <attribute name="title">
+     <string>传输列表</string>
+    </attribute>
+    <widget class="QWidget" name="widget_3" native="true">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>1690</width>
+       <height>293</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">#widget_3
+{
+background-color: rgb(236,239,246); /* 背景颜色 */  
+}</string>
+     </property>
+     <widget class="QTableView" name="tableView_3">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>1690</width>
+        <height>293</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">/* 设置QTableView表头的背景颜色和文字颜色 */  
+QTableView QHeaderView::section {  
+    background-color:rgb(236,239,246); /* 背景色 */  
+    color: rgb(155,155,155);         /* 文字颜色 */
+    height:40px;  
+    padding-left: 4px;    /* 左内边距 */  
+    padding-right: 4px;   /* 右内边距 */  
+    border-left: 1px solid #555; /* 左边框 */  
+    border-right: 1px solid #555; /* 右边框 */  
+}  
+  
+/* 当鼠标悬停在表头部分时 */  
+QTableView QHeaderView::section:hover {  
+  /*  background-color: #555; /* 鼠标悬停时的背景色 */  
+}  
+  
+/* 表头被选中的样式 */  
+QTableView QHeaderView::section:selected {  
+    background-color: #a6cafe; /* 选中时的背景色 */  
+    color: black;             /* 选中时的文字颜色 */  
+}  
+  
+/* 当表头不可用时（比如某个方向被禁用） */  
+QTableView QHeaderView::section:disabled {  
+    color: gray; /* 禁用时的文字颜色 */  
+}  
+  
+/* 垂直表头的样式 */  
+QTableView QHeaderView::section:vertical {  
+    border-top: 1px solid #555; /* 上边框 */  
+    border-bottom: 1px solid #555; /* 下边框 */   
+}  
+  
+/* 表头的分隔线样式（注意：这个可能需要结合具体的Qt版本和平台来看是否支持） */  
+QTableView QHeaderView::separator {  
+    background-color: rgb(0,0,0); /* 分隔线颜色 */  
+    width: 3px;              /* 分隔线宽度 */  
+    height: 3px;             /* 垂直分隔线的高度（对于水平分隔线可能不适用） */  
+}</string>
+      </property>
+     </widget>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab_2">
+    <attribute name="title">
+     <string>传输日志</string>
+    </attribute>
+    <widget class="QWidget" name="widget_4" native="true">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>1690</width>
+       <height>293</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">#widget_4
+{
+background-color: rgb(236,239,246); /* 背景颜色 */  
+}</string>
+     </property>
+    </widget>
    </widget>
   </widget>
  </widget>
