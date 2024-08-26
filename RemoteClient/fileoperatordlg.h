@@ -47,6 +47,7 @@ private:
     std::wstring multiBytesToWideChar(std::string& str); //将单字节的字符串转为宽字节字符串
     QString getParentFilePath(QString currentPath); //根据当前目录路径获取父目录
     void setComboBoxPath(QString path); //设置comboBox的路径显示的信息
+    QString getMostParentPath(QString currentPath); //根据当前路径，获取该路径的最初的父目录(既回退到盘符路径)
 private:
     Ui::CFileOperatorDlg *ui;
 };

@@ -37,7 +37,7 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
     //显示当前路径文件信息
     _beginthreadex(nullptr,0,&CFileOperatorDlg::threadShowFileInfo,this,0,nullptr);
 
-    //频繁快速进行切换磁盘出现崩溃问题
+    //频繁快速进行切换磁盘出现崩溃问题  测试解决崩溃问题，原因是在线程函数没有执行完毕的时候就立马快速切换路径导致，所以保证在每次切换前保证上一个线程函数必须完成后再进行查询信息
     //进行磁盘切换,显示对应盘符的文件信息
     QObject::connect(ui->comboBox,&QComboBox::currentTextChanged,[=](const QString & str){
         //进行查询对应的磁盘的文件信息
@@ -45,7 +45,10 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
         temp+="\\";
         this->firstModelClear();
         this->localComboBoxPath = temp; //触发comboBox的信号执行对应的槽函数
-        _beginthreadex(nullptr,0,&CFileOperatorDlg::threadShowFileInfo,this,0,nullptr);
+        WaitForSingleObject(this->mutex,INFINITE);
+        HANDLE thread = (HANDLE)_beginthreadex(nullptr,0,&CFileOperatorDlg::threadShowFileInfo,this,0,nullptr);
+        WaitForSingleObject(thread,INFINITE);
+        ReleaseMutex(this->mutex);
     });
 
     //进行点击对应的文件或者文件夹
@@ -98,7 +101,6 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
          QString temp = parentPath;
          temp +="\\";
          this->localComboBoxPath = temp;
-        // _beginthreadex(nullptr,0,&CFileOperatorDlg::threadShowFileInfo,this,0,nullptr);
          //更改目录路径显示
          this->setComboBoxPath(parentPath);
         }
@@ -115,12 +117,26 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
          QString temp = parentPath;
          temp +="\\";
          this->localComboBoxPath = temp;
-        // _beginthreadex(nullptr,0,&CFileOperatorDlg::threadShowFileInfo,this,0,nullptr);
          //更改目录路径显示
          this->setComboBoxPath(parentPath);
         }
     });
 
+    //直接回到盘符的最初目录
+    QObject::connect(ui->pushButton_3,&QPushButton::clicked,[=](){
+        QString path = this->getMostParentPath(ui->comboBox->currentText());
+        QString temp = path;
+        temp +="\\";
+        this->localComboBoxPath = temp;
+        this->setComboBoxPath(path);
+    });
+}
+
+QString CFileOperatorDlg::getMostParentPath(QString currentPath)
+{
+    int firstIndex = currentPath.indexOf("\\"); //获取第一次出现的这个字符的下标
+    QString temp = currentPath.left(firstIndex);
+    return temp;
 }
 
 void CFileOperatorDlg::setComboBoxPath(QString path)
@@ -379,10 +395,9 @@ void CFileOperatorDlg::showFileInfo(QString path)
 unsigned WINAPI CFileOperatorDlg::threadShowFileInfo(LPVOID arg)
 {
     CFileOperatorDlg* thiz = (CFileOperatorDlg*)arg;
-    WaitForSingleObject(thiz->mutex,INFINITE);
+
     thiz->firstModelClear();
     thiz->showFileInfo(thiz->localComboBoxPath); //默认加载的C盘
-    ReleaseMutex(thiz->mutex);
     _endthreadex(0);
     return 0;
 }

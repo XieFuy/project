@@ -107,6 +107,7 @@ void CClientContorler::RemoteFileOperator(QString num)
         this->m_fileOperatorDlg = new CFileOperatorDlg();
         this->m_fileOperatorDlg->exec();//生成模态对话框
     }
+    delete this->m_fileOperatorDlg;
     this->m_fileOperatorDlg = nullptr;
 }
 
