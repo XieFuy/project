@@ -37,15 +37,14 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
     //显示当前路径文件信息
     _beginthreadex(nullptr,0,&CFileOperatorDlg::threadShowFileInfo,this,0,nullptr);
 
+    //频繁快速进行切换磁盘出现崩溃问题
     //进行磁盘切换,显示对应盘符的文件信息
     QObject::connect(ui->comboBox,&QComboBox::currentTextChanged,[=](const QString & str){
         //进行查询对应的磁盘的文件信息
         QString temp = str;
         temp+="\\";
-        //清除当前二维表中的行文件信息
-        int nRowsCount = this->m_model->rowCount();
-        this->m_model->removeRows(0,nRowsCount);
-        this->localComboBoxPath = temp;
+        this->firstModelClear();
+        this->localComboBoxPath = temp; //触发comboBox的信号执行对应的槽函数
         _beginthreadex(nullptr,0,&CFileOperatorDlg::threadShowFileInfo,this,0,nullptr);
     });
 
@@ -57,28 +56,10 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
           //获取被点击的文件或者文件夹的名称
             // 获取模型
             QString fileName = "";
-            const QStandardItemModel *model = qobject_cast<const QStandardItemModel*>(index.model());
-            if (model) {
-                // 使用DisplayRole获取文本数据
-                fileName = model->data(index, Qt::DisplayRole).toString();
-            }
+            this->getFileName(fileName,index);
 
             QString fileType = "";
-            //进行遍历获取文件类型(是文件还是文件夹)
-            for(int i = 0 ; i < this->m_model->rowCount(); i++)
-            {
-                QStandardItem* row = this->m_model->item(i,0);
-                if(row && row->text() == fileName)
-                {
-                    QStandardItem* thirdCloumItem  = this->m_model->item(i,2);
-                    if(thirdCloumItem)
-                    {
-                       fileType = thirdCloumItem->text();
-                       qDebug()<<"被点击的"<<fileName<<"的类型为："<<fileType;
-                    }
-                }
-            }
-
+            this->getFileType(fileType,fileName);
             //根据不同的文件类型来进行不同的对应操作
             if(fileType=="文件")
             {
@@ -90,10 +71,7 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
              qDebug()<<temp.c_str();
 
              //将单字节转为多字节
-             int len = MultiByteToWideChar(CP_UTF8, 0, temp.c_str(), -1, nullptr, 0);
-             std::wstring wstr(len, '\0');
-             MultiByteToWideChar(CP_UTF8, 0, temp.c_str(), -1, &wstr[0], len);
-
+             std::wstring wstr = this->multiBytesToWideChar(temp);
              //包含中文的需要使用多字节
              HINSTANCE ret =  ShellExecuteW(nullptr,nullptr,wstr.data(),nullptr,nullptr,SW_SHOWNORMAL); //找到打不开文件的原因，中文字符为宽字节，需要进行使用宽字节的api
              qDebug()<<ret<<GetLastError();
@@ -104,15 +82,107 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
                 QString path = ui->comboBox->currentText();
                 path +="\\";
                 path += fileName;
-
-              int index =   ui->comboBox->currentIndex();
-              if(index != -1)
-              {
-                  ui->comboBox->setItemText(index,path);
-              }
+                this->setComboBoxPath(path);
             }
         }
     });
+
+    //返回上一级目录
+    QObject::connect(ui->pushButton,&QPushButton::clicked,[=](){
+        QString currentPath = this->ui->comboBox->currentText();
+        qDebug()<<currentPath;
+        QString parentPath =  this->getParentFilePath(currentPath);
+        qDebug()<<parentPath;
+        if(parentPath != "")
+        {
+         QString temp = parentPath;
+         temp +="\\";
+         this->localComboBoxPath = temp;
+        // _beginthreadex(nullptr,0,&CFileOperatorDlg::threadShowFileInfo,this,0,nullptr);
+         //更改目录路径显示
+         this->setComboBoxPath(parentPath);
+        }
+    });
+
+    //返回上一级目录
+    QObject::connect(ui->pushButton_2,&QPushButton::clicked,[=](){
+        QString currentPath = this->ui->comboBox->currentText();
+        qDebug()<<currentPath;
+        QString parentPath =  this->getParentFilePath(currentPath);
+        qDebug()<<parentPath;
+        if(parentPath != "")
+        {
+         QString temp = parentPath;
+         temp +="\\";
+         this->localComboBoxPath = temp;
+        // _beginthreadex(nullptr,0,&CFileOperatorDlg::threadShowFileInfo,this,0,nullptr);
+         //更改目录路径显示
+         this->setComboBoxPath(parentPath);
+        }
+    });
+
+}
+
+void CFileOperatorDlg::setComboBoxPath(QString path)
+{
+    int index =   ui->comboBox->currentIndex();
+    if(index != -1)
+    {
+        ui->comboBox->setItemText(index,path);
+    }
+}
+
+QString CFileOperatorDlg::getParentFilePath(QString currentPath)
+{
+   QString parentPath = "";
+   int lastIndex = currentPath.lastIndexOf("\\");
+   if(lastIndex != -1)
+   {
+       parentPath = currentPath.left(lastIndex); //进行减一，去除掉双斜杠号，避免导致路径解析的不正确
+   }
+   return parentPath;
+}
+
+std::wstring CFileOperatorDlg::multiBytesToWideChar(std::string& str)
+{
+    int len = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, nullptr, 0);
+    std::wstring wstr(len, '\0');
+    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, &wstr[0], len);
+    return wstr;
+}
+
+void CFileOperatorDlg::getFileType(QString& fileType,QString& fileName)
+{
+    //进行遍历获取文件类型(是文件还是文件夹)
+    for(int i = 0 ; i < this->m_model->rowCount(); i++)
+    {
+        QStandardItem* row = this->m_model->item(i,0);
+        if(row && row->text() == fileName)
+        {
+            QStandardItem* thirdCloumItem  = this->m_model->item(i,2);
+            if(thirdCloumItem)
+            {
+               fileType = thirdCloumItem->text();
+               qDebug()<<"被点击的"<<fileName<<"的类型为："<<fileType;
+            }
+        }
+    }
+}
+
+void CFileOperatorDlg::getFileName(QString & fileName,const QModelIndex& index)
+{
+    const QStandardItemModel *model = qobject_cast<const QStandardItemModel*>(index.model());
+    if (model) {
+        // 使用DisplayRole获取文本数据
+        fileName = model->data(index, Qt::DisplayRole).toString();
+    }
+}
+
+void CFileOperatorDlg::firstModelClear()  //频繁的切换路径会出现程序崩溃的问题
+{
+    //清除当前二维表中的行文件信息
+    int nRowsCount = this->m_model->rowCount();
+    this->m_model->removeRows(0,nRowsCount);
 }
 
 void CFileOperatorDlg::setControlStyleSheet()
@@ -309,7 +379,10 @@ void CFileOperatorDlg::showFileInfo(QString path)
 unsigned WINAPI CFileOperatorDlg::threadShowFileInfo(LPVOID arg)
 {
     CFileOperatorDlg* thiz = (CFileOperatorDlg*)arg;
+    WaitForSingleObject(thiz->mutex,INFINITE);
+    thiz->firstModelClear();
     thiz->showFileInfo(thiz->localComboBoxPath); //默认加载的C盘
+    ReleaseMutex(thiz->mutex);
     _endthreadex(0);
     return 0;
 }

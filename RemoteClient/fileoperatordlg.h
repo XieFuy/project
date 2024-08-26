@@ -41,6 +41,12 @@ private:
     void setThirdModelAndStyle();//给显示文件下载信息的TableView设置model和列宽
     void initLocalDiskInfo();//初始化获取本地主机的盘符信息
     void setControlStyleSheet();//设置控件样式
+    void firstModelClear(); //清除第一个model的所有行数据
+    void getFileName(QString& fileName,const QModelIndex& index); //获取表格的文件或者文件夹的名称
+    void getFileType(QString& fileType,QString& fileName); //获取文件类型(是文件还是文件夹)
+    std::wstring multiBytesToWideChar(std::string& str); //将单字节的字符串转为宽字节字符串
+    QString getParentFilePath(QString currentPath); //根据当前目录路径获取父目录
+    void setComboBoxPath(QString path); //设置comboBox的路径显示的信息
 private:
     Ui::CFileOperatorDlg *ui;
 };
