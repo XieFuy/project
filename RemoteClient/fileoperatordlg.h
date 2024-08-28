@@ -30,12 +30,14 @@ private:
     QStandardItemModel* m_model = nullptr;
     QStandardItemModel* m_model2 = nullptr;
     QStandardItemModel* m_model3 = nullptr;
+    QStandardItemModel* tempModel = nullptr;
     HANDLE mutex;
     QString localComboBoxPath; //硬盘磁盘
     void checkLocalDisk(); //检测获取本地主机的盘符
     static unsigned WINAPI threadCheckLocalDisk(LPVOID arg);//检测获取本地主机盘符的线程函数
     static unsigned WINAPI threadShowFileInfo(LPVOID arg); //显示本地主机文件信息的线程函数
     static unsigned WINAPI threadGetDirSize(LPVOID arg);//获取文件夹大小的线程函数
+    static unsigned WINAPI threadShowFerchResult(LPVOID arg);//显示本地的查询结果线程函数
     void setFirstModelAndStyle(); //给显示本地主机文件信息的TableView设置model和列宽
     void setSecondModelAndStyle(); //给显示远程主机文件信息的TableView设置model和列宽
     void setThirdModelAndStyle();//给显示文件下载信息的TableView设置model和列宽
@@ -48,6 +50,7 @@ private:
     QString getParentFilePath(QString currentPath); //根据当前目录路径获取父目录
     void setComboBoxPath(QString path); //设置comboBox的路径显示的信息
     QString getMostParentPath(QString currentPath); //根据当前路径，获取该路径的最初的父目录(既回退到盘符路径)
+    void showFerchResult(QStandardItemModel* tempModel); //显示本地的查询结果
 private:
     Ui::CFileOperatorDlg *ui;
 };

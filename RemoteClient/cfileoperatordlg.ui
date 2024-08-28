@@ -153,6 +153,11 @@ color:rgb(83,86,93);
       <height>50</height>
      </rect>
     </property>
+    <property name="styleSheet">
+     <string notr="true">#pushButton_2{
+background-color:rgb(221,58,95);
+}</string>
+    </property>
     <property name="text">
      <string/>
     </property>
@@ -231,31 +236,6 @@ border:none;
     </property>
     <property name="placeholderText">
      <string>搜索</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_4">
-    <property name="geometry">
-     <rect>
-      <x>250</x>
-      <y>80</y>
-      <width>30</width>
-      <height>50</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">#label_4
-{
-background-color:rgb(255,253,255);
-}</string>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="pixmap">
-     <pixmap resource="res.qrc">:/search.png</pixmap>
-    </property>
-    <property name="scaledContents">
-     <bool>true</bool>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_5">
@@ -382,6 +362,35 @@ QTableView QHeaderView::separator {
     width: 3px;              /* 分隔线宽度 */  
     height: 3px;             /* 垂直分隔线的高度（对于水平分隔线可能不适用） */  
 }</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_11">
+    <property name="geometry">
+     <rect>
+      <x>250</x>
+      <y>80</y>
+      <width>30</width>
+      <height>50</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">#pushButton_11{
+background-color:rgb(255,253,255);
+border:none;
+}</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="icon">
+     <iconset resource="res.qrc">
+      <normaloff>:/search.png</normaloff>:/search.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>30</width>
+      <height>30</height>
+     </size>
     </property>
    </widget>
   </widget>

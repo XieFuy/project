@@ -130,6 +130,106 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
         this->localComboBoxPath = temp;
         this->setComboBoxPath(path);
     });
+
+    //刷新当前路劲下的文件信息
+    QObject::connect(ui->pushButton_4,&QPushButton::clicked,[=](){
+        QString currentPath = this->ui->comboBox->currentText();
+        QString temp = currentPath;
+        temp+="\\";
+        this->localComboBoxPath = temp;
+        this->setComboBoxPath("");
+        this->setComboBoxPath(currentPath);
+    });
+
+    //模糊查询当前路径下的文件
+    QObject::connect(ui->lineEdit,&QLineEdit::editingFinished,[=](){
+        QString text = ui->lineEdit->text();
+        //根据当前文本显示包含该字段的文件/文件夹信息
+        if(text == "")
+        {
+            return ;
+        }
+
+        //先重新加载当前目录下的文件
+        QString currentPath = this->ui->comboBox->currentText();
+        QString temp = currentPath;
+        temp+="\\";
+        this->localComboBoxPath = temp;
+        this->setComboBoxPath("");
+        this->setComboBoxPath(currentPath);
+
+        //将目前该目录下的符合条件的文件信息进行存储到临时的模型中
+        QStandardItemModel* tempModel = new QStandardItemModel();
+        for(int i = 0 ; i < this->m_model->rowCount();i++)
+        {
+            QList<QStandardItem*> tempList;
+            for(int j = 0 ; j < this->m_model->columnCount();j++ )
+            {
+               QStandardItem* temp =   this->m_model->item(i,j);
+               qDebug()<<temp<<"  "<<temp->text();
+               if(temp && j == 0) //确保遍历的是第一列,并且文件
+               {
+                   if(temp->text().contains(text)) //文件夹名称包含关键字
+                   {
+                       QStandardItem* tempClone = temp->clone();
+                       tempList.push_back(tempClone);
+                   }else
+                   {
+                       break;
+                   }
+
+               }else //其他列的内容
+               {
+                  QStandardItem* tempClone = temp->clone();
+                  tempList.push_back(tempClone);
+               }
+            }
+            if(tempList.size() > 0)
+            {
+                  tempModel->appendRow(tempList);
+            }
+        }
+
+        if(tempModel == nullptr)
+        {
+            return;
+        }
+        //进行清除原本的模型的数据
+        this->firstModelClear();
+        //将查询后的结果进行赋值给model
+        this->tempModel = tempModel;
+        HANDLE thread = (HANDLE)_beginthreadex(nullptr,0,&CFileOperatorDlg::threadShowFerchResult,this,0,nullptr);
+        WaitForSingleObject(thread,INFINITE);
+        delete this->tempModel;
+        this->tempModel = nullptr;
+        this->ui->lineEdit->setText("");
+    });
+}
+
+unsigned WINAPI CFileOperatorDlg::threadShowFerchResult(LPVOID arg)
+{
+    CFileOperatorDlg* thiz = (CFileOperatorDlg*)arg;
+    thiz->showFerchResult(thiz->tempModel);
+    _endthreadex(0);
+    return 0;
+}
+
+void CFileOperatorDlg::showFerchResult(QStandardItemModel* tempModel)
+{
+   for(int i = 0 ; i < tempModel->rowCount() ; i++)
+   {
+       QList<QStandardItem*> row;
+       for(int j = 0 ; j < tempModel->columnCount();j++)
+       {
+           QStandardItem* item =  tempModel->item(i,j);
+           if(item)
+           {
+               QStandardItem* itemClone = item->clone();
+               row.push_back(itemClone);
+           }
+       }
+       this->m_model->appendRow(row);
+   }
 }
 
 QString CFileOperatorDlg::getMostParentPath(QString currentPath)
@@ -203,16 +303,16 @@ void CFileOperatorDlg::firstModelClear()  //频繁的切换路径会出现程序
 
 void CFileOperatorDlg::setControlStyleSheet()
 {
-    ui->pushButton->setStyleSheet("QPushButton{background-color:rgb(254,254,254);border:none;border-radius:10px;}");
-    ui->pushButton_6->setStyleSheet("QPushButton{background-color:rgb(254,254,254);border:none;border-radius:10px;}");
-    ui->pushButton_2->setStyleSheet("QPushButton{background-color:rgb(254,254,254);border:none;border-radius:10px;}");
-    ui->pushButton_7->setStyleSheet("QPushButton{background-color:rgb(254,254,254);border:none;border-radius:10px;}");
-    ui->pushButton_3->setStyleSheet("QPushButton{background-color:rgb(254,254,254);border:none;border-radius:10px;}");
-    ui->pushButton_8->setStyleSheet("QPushButton{background-color:rgb(254,254,254);border:none;border-radius:10px;}");
-    ui->pushButton_4->setStyleSheet("QPushButton{background-color:rgb(254,254,254);border:none;border-radius:10px;}");
-    ui->pushButton_9->setStyleSheet("QPushButton{background-color:rgb(254,254,254);border:none;border-radius:10px;}");
-    ui->pushButton_5->setStyleSheet("QPushButton{background-color:rgb(51,103,161);border:none;border-radius:10px;}");
-    ui->pushButton_10->setStyleSheet("QPushButton{background-color:rgb(51,103,161);border:none;border-radius:10px;}");
+    ui->pushButton->setStyleSheet("QPushButton{background-color:rgb(254,254,254);border:none;border-radius:10px;} QPushButton:hover{background-color:rgb(221,58,95);}");
+    ui->pushButton_6->setStyleSheet("QPushButton{background-color:rgb(254,254,254);border:none;border-radius:10px;} QPushButton:hover{background-color:rgb(221,58,95);}");
+    ui->pushButton_2->setStyleSheet("QPushButton{background-color:rgb(254,254,254);border:none;border-radius:10px;} QPushButton:hover{background-color:rgb(221,58,95);}");
+    ui->pushButton_7->setStyleSheet("QPushButton{background-color:rgb(254,254,254);border:none;border-radius:10px;} QPushButton:hover{background-color:rgb(221,58,95);}");
+    ui->pushButton_3->setStyleSheet("QPushButton{background-color:rgb(254,254,254);border:none;border-radius:10px;} QPushButton:hover{background-color:rgb(221,58,95);}");
+    ui->pushButton_8->setStyleSheet("QPushButton{background-color:rgb(254,254,254);border:none;border-radius:10px;} QPushButton:hover{background-color:rgb(221,58,95);}");
+    ui->pushButton_4->setStyleSheet("QPushButton{background-color:rgb(254,254,254);border:none;border-radius:10px;} QPushButton:hover{background-color:rgb(221,58,95);}");
+    ui->pushButton_9->setStyleSheet("QPushButton{background-color:rgb(254,254,254);border:none;border-radius:10px;} QPushButton:hover{background-color:rgb(221,58,95);}");
+    ui->pushButton_5->setStyleSheet("QPushButton{background-color:rgb(51,103,161);border:none;border-radius:10px;}  QPushButton:hover{background-color:rgb(221,58,95);}");
+    ui->pushButton_10->setStyleSheet("QPushButton{background-color:rgb(51,103,161);border:none;border-radius:10px;} QPushButton:hover{background-color:rgb(221,58,95);}");
 }
 
 void CFileOperatorDlg::initLocalDiskInfo()
@@ -276,8 +376,8 @@ unsigned WINAPI CFileOperatorDlg::threadCheckLocalDisk(LPVOID arg)
    return 0;
 }
 
-//这个操作是一个耗时的操作想办法优化
-qint64 CFileOperatorDlg::getDirSize(const QFileInfo& dir) //传递过来一个文件夹 存在bug，只能计算传递过来的文件夹的第一层文件的大小
+//这个操作是一个耗时的操作想办法优化 暂时没有调用到
+qint64 CFileOperatorDlg::getDirSize(const QFileInfo& dir)
 {
     qint64 totalSize = 0;
     if(dir.isDir())
@@ -293,7 +393,7 @@ qint64 CFileOperatorDlg::getDirSize(const QFileInfo& dir) //传递过来一个�
 
         // 遍历文件夹内的所有子文件夹，并递归计算它们的大小
         QFileInfoList dirs = dirOpen.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System);
-        for (const QFileInfo &dirInfo : dirs) {
+       for (const QFileInfo &dirInfo : dirs) {
             //计划在这里进行开启子线程进行计算
             argList* arg = new argList();
             arg->dirInfo = &dirInfo;
@@ -329,7 +429,7 @@ void CFileOperatorDlg::showFileInfo(QString path)
         QList<QStandardItem*> row; //代表一行
 
         // 名称
-        QStandardItem *nameItem = new QStandardItem(fileInfo.fileName()); //相当于每一个格子的数据
+        QStandardItem *nameItem = new  QStandardItem(fileInfo.fileName()); //相当于每一个格子的数据
         nameItem->setToolTip(fileInfo.filePath()); // 可以设置工具提示为完整路径
         nameItem->setFlags(nameItem->flags() & ~Qt::ItemIsEditable);
         row.append(nameItem);//将这一格的内容添加到行中
