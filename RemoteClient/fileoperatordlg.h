@@ -12,6 +12,9 @@
 #include<direct.h>
 #include<string>
 #include<shellapi.h>
+#include<deletebutton.h>
+#include<QMessageBox>
+#include<QModelIndex>
 
 namespace Ui {
 class CFileOperatorDlg;
@@ -33,6 +36,9 @@ private:
     QStandardItemModel* tempModel = nullptr;
     HANDLE mutex;
     QString localComboBoxPath; //硬盘磁盘
+    DeleteButton * deleteButton = nullptr;
+    QString fileName;
+    QString fileType;
     void checkLocalDisk(); //检测获取本地主机的盘符
     static unsigned WINAPI threadCheckLocalDisk(LPVOID arg);//检测获取本地主机盘符的线程函数
     static unsigned WINAPI threadShowFileInfo(LPVOID arg); //显示本地主机文件信息的线程函数
@@ -51,6 +57,7 @@ private:
     void setComboBoxPath(QString path); //设置comboBox的路径显示的信息
     QString getMostParentPath(QString currentPath); //根据当前路径，获取该路径的最初的父目录(既回退到盘符路径)
     void showFerchResult(QStandardItemModel* tempModel); //显示本地的查询结果
+    void reFlashFileInfo(); //刷新本地主机当前路径下的文件信息
 private:
     Ui::CFileOperatorDlg *ui;
 };

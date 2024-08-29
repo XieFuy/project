@@ -21,7 +21,9 @@ SOURCES += main.cpp\
     ctesttool.cpp \
     watchdlg.cpp \
     cmouseevent.cpp \
-    fileoperatordlg.cpp
+    fileoperatordlg.cpp \
+    mytableview.cpp \
+    deletebutton.cpp
 
 HEADERS  += widget.h \
     cclientcontorler.h \
@@ -31,12 +33,15 @@ HEADERS  += widget.h \
     ctesttool.h \
     watchdlg.h \
     cmouseevent.h \
-    fileoperatordlg.h
+    fileoperatordlg.h \
+    mytableview.h \
+    deletebutton.h
 
 FORMS    += widget.ui \
     loginwidget.ui \
     cwatchdlg.ui \
-    cfileoperatordlg.ui
+    cfileoperatordlg.ui \
+    deletebutton.ui
 
 RESOURCES += \
     res.qrc
