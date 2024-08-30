@@ -15,6 +15,7 @@
 #include<deletebutton.h>
 #include<QMessageBox>
 #include<QModelIndex>
+#include"cclientcontorler.h"
 
 namespace Ui {
 class CFileOperatorDlg;
@@ -58,6 +59,8 @@ private:
     QString getMostParentPath(QString currentPath); //根据当前路径，获取该路径的最初的父目录(既回退到盘符路径)
     void showFerchResult(QStandardItemModel* tempModel); //显示本地的查询结果
     void reFlashFileInfo(); //刷新本地主机当前路径下的文件信息
+    void initRemoteDiskInfo(); //初始化远程主机的盘符信息
+    void analysisDiskInfoStr(std::string diskInfoStr);//解析盘符信息字符串
 private:
     Ui::CFileOperatorDlg *ui;
 };

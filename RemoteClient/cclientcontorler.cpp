@@ -124,6 +124,12 @@ void CClientContorler::SendMouseEventPacket(QPoint point)
 
 }
 
+ std::string CClientContorler::getRemoteDiskInfo()
+ {
+    CClientSocket* pServer = CClientSocket::getInstance();
+    return  pServer->getRemoteDiskInfo();
+ }
+
 void CClientContorler::threadSendWatchPacket()
 {
     CClientSocket* pClient = CClientSocket::getInstance();

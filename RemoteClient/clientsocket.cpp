@@ -102,8 +102,8 @@ BOOL CClientSocket::initSocket()
     memset(&this->m_sockClientAddr,0,sizeof(SOCKADDR_IN));
     this->m_sockClientAddr.sin_port = htons(9527);
     this->m_sockClientAddr.sin_family = AF_INET;
-    this->m_sockClientAddr.sin_addr.S_un.S_addr = inet_addr("192.168.232.128"); //服务端的ip地址
-//    this->m_sockClientAddr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
+   // this->m_sockClientAddr.sin_addr.S_un.S_addr = inet_addr("192.168.232.128"); //服务端的ip地址
+    this->m_sockClientAddr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
     return TRUE;
 }
 
@@ -162,7 +162,7 @@ WORD CClientSocket::DealCommand()   //应该是这里的效率问题
     char* recvBuffer = new char[1024000];
     memset(recvBuffer,0,sizeof(recvBuffer));
 
-    //每次接收1024个字节
+    //每次接收102400个字节
     size_t alReadlyToRecv = 0;
     size_t stepSize = 102400;
 //    char* pData = this->m_recvBuffer.data();
@@ -266,6 +266,13 @@ BOOL CClientSocket::ConnectToServer()
      return FALSE;
  }
 
+ std::string CClientSocket::getRemoteDiskInfo()
+ {
+     CPacket packet(4,nullptr,0);
+     size_t ret = this->SendPacket(packet);
+     WORD cmd =  this->DealCommand();
+     return this->m_packet.getData();
+ }
 
 CClientSocket* CClientSocket::m_instance = nullptr;
 CClientSocket::CHelper CClientSocket::m_helper;

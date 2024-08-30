@@ -13,14 +13,15 @@ public:
     static CClientSocket* getInstance();
     size_t SendPacket(CPacket packet); //进行发送数据包 返回发送数据包的长度
     size_t SendPacketMouseEvent(CPacket packet);
-     WORD DealCommand(); //处理服务端发送过来的包数据
-     WORD DealCommandMouseEvent();
-     void CloseSocket(); //关闭套接字
-     void CloseSocketMouseEvent();
-     CPacket& getPacket();
-     BOOL initSocket(); //初始化套接字
-     BOOL initSocketMouseEvent();
-     BOOL ConnectTest();
+    WORD DealCommand(); //处理服务端发送过来的包数据
+    WORD DealCommandMouseEvent();
+    void CloseSocket(); //关闭套接字
+    void CloseSocketMouseEvent();
+    CPacket& getPacket();
+    BOOL initSocket(); //初始化套接字
+    BOOL initSocketMouseEvent();
+    BOOL ConnectTest();
+    std::string getRemoteDiskInfo();
 private:
     SOCKET m_sockClient;
     SOCKADDR_IN m_sockClientAddr;

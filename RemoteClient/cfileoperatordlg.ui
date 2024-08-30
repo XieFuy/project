@@ -640,7 +640,7 @@ min-width:30px;
 min-heigth:30px;
 }
 
-QComboBox#comboBox::drop-down:checked
+QComboBox#comboBox_2::drop-down:checked
 {
 border-image:url(:/comboxUp.png);
 }

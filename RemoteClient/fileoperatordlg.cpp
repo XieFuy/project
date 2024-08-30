@@ -25,7 +25,7 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
     this->setSecondModelAndStyle();
     this->setThirdModelAndStyle();
     this->setControlStyleSheet();
-    ui->comboBox_2->addItem(QIcon(":/disk.png"),"测试");
+    //ui->comboBox_2->addItem(QIcon(":/disk.png"),"测试");
     this->mutex = CreateMutex(nullptr,FALSE,nullptr);
     this->localComboBoxPath = "C:\\";
     this->fileName = "";
@@ -34,6 +34,10 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
 //#if 0
 //this->showFileInfo("C:\\");
 //#endif
+
+    //初始化远程主机的盘符信息
+    this->initRemoteDiskInfo();
+
     this->initLocalDiskInfo();
     //显示当前路径文件信息
     _beginthreadex(nullptr,0,&CFileOperatorDlg::threadShowFileInfo,this,0,nullptr);
@@ -91,6 +95,7 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
         }
     });
 
+    //获取选中的文件/文件夹的文件名和文件类型
     QObject::connect(ui->tableView,&MyTableView::clicked,[=](const QModelIndex &index){
        this->getFileName(this->fileName,index);
        this->getFileType(this->fileType,this->fileName);
@@ -262,6 +267,28 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
     });
 
 
+}
+
+void CFileOperatorDlg::analysisDiskInfoStr(std::string diskInfoStr)
+{
+    for(std::string::iterator pos = diskInfoStr.begin(); pos != diskInfoStr.end(); pos++)
+    {
+        std::string tempStr ;
+        tempStr.push_back(*pos);
+        tempStr.push_back(':');
+        QString str = tempStr.c_str();
+        this->ui->comboBox_2->addItem(QIcon(":/disk.png"),str);
+    }
+}
+
+void CFileOperatorDlg::initRemoteDiskInfo()
+{
+     CClientContorler* pCtrl =  CClientContorler::getInstances();
+     std::string diskInfo =  pCtrl->getRemoteDiskInfo();
+     qDebug()<<"接收到的字符串为："<<diskInfo.data();
+     this->analysisDiskInfoStr(diskInfo);
+     //设置默认项
+     this->ui->comboBox_2->setCurrentIndex(0);
 }
 
 void CFileOperatorDlg::reFlashFileInfo()

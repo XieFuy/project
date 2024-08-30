@@ -8,7 +8,9 @@
 #include"packet.h"
 #include"watchdlg.h"
 #include"fileoperatordlg.h"
+#include<string>
 
+class CFileOperatorDlg;
 class Widget;
 
 //控制层，将该类设计成饿汉式单例设计模式
@@ -27,6 +29,7 @@ public:
     void threadSendWatchPacket();
     void SendMouseEventPacket(QPoint point); //进行鼠标操作请求指令发送  
     void RemoteFileOperator(QString num); //进行远程文件操作
+    std::string getRemoteDiskInfo(); //进行获取远程
 private:
     CWatchDlg* m_watchDlg;
     QApplication* m_a;
