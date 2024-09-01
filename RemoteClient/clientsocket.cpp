@@ -47,6 +47,42 @@ void  CClientSocket::releaseInstance()
     }
 }
 
+QVector<QStringList> CClientSocket::getRemoteFileInfo(QString currentPath)
+{
+    QVector<QStringList> result;
+    std::string temp = currentPath.toUtf8().data();
+    size_t ret =  this->SendPacket(CPacket(6,(const BYTE*)temp.c_str(),temp.size()));
+    //进行接收数据包
+    std::list<CPacket> recvList;
+    this->RecvMultiPackets(recvList);
+    qDebug()<<recvList.size();
+
+    QString  currentPart ;
+    QStringList partList;
+    //将从服务端获取到的数据进行解析，按格式进行返回
+    for(std::list<CPacket>::iterator pos = recvList.begin();pos != recvList.end();pos++)
+    {
+        QString str = QString::fromLocal8Bit(pos->getData().c_str()); //含有中文的std::string转为QString需要用fromLocal8Bit进行转换
+        qDebug()<<str;
+        //进行对每一行的数据进行解析
+       for(QString::iterator pos = str.begin();pos != str.end();pos++)
+       {
+           if(*pos != '-')
+           {
+               currentPart.append(*pos);
+           }else
+           {
+               partList.append(currentPart);
+               currentPart.clear();
+           }
+       }
+       qDebug()<<partList.size();
+       result.append(partList);
+       partList.clear();
+    }
+    return result;
+}
+
 BOOL CClientSocket::initSocketEnv()
 {
     WORD wVersionRequested;
@@ -102,7 +138,7 @@ BOOL CClientSocket::initSocket()
     memset(&this->m_sockClientAddr,0,sizeof(SOCKADDR_IN));
     this->m_sockClientAddr.sin_port = htons(9527);
     this->m_sockClientAddr.sin_family = AF_INET;
-   // this->m_sockClientAddr.sin_addr.S_un.S_addr = inet_addr("192.168.232.128"); //服务端的ip地址
+  //  this->m_sockClientAddr.sin_addr.S_un.S_addr = inet_addr("192.168.232.128"); //服务端的ip地址
     this->m_sockClientAddr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
     return TRUE;
 }
@@ -143,6 +179,7 @@ WORD CClientSocket::DealCommandMouseEvent()
         if(ret > 0 )
         {
             alReadlyToRecv += ret;
+
         }else
         {
             qDebug()<<"num:"<<WSAGetLastError();
@@ -175,6 +212,7 @@ WORD CClientSocket::DealCommand()   //应该是这里的效率问题
         if(ret > 0 )
         {
             alReadlyToRecv += ret;
+
             //this->m_recvBuffer.resize(alReadlyToRecv + stepSize);
         }else
         {
@@ -186,6 +224,34 @@ WORD CClientSocket::DealCommand()   //应该是这里的效率问题
     this->m_packet = CPacket((const BYTE*)recvBuffer,alReadlyToRecv);
     delete  []recvBuffer;
     return this->m_packet.getCmd();
+}
+
+void CClientSocket::RecvMultiPackets(std::list<CPacket>& packets)
+{
+    char* recvBuffer = new char[1024000]; //这样子写必须确保所有的数据包不会超过1MB
+    memset(recvBuffer,0,1024000);
+    size_t stepSize = 102400;
+    size_t alReadyRecv = 0;
+    char* pData = recvBuffer;
+    //接收完整的单个数据包的步骤
+        while(true)
+        {
+           int ret =   recv(this->m_sockClient,pData + alReadyRecv,stepSize,0);
+           if(ret > 0 || alReadyRecv != 0)
+           {
+             alReadyRecv += ret;
+             size_t temp = alReadyRecv;
+             this->m_packet = CPacket((const BYTE*)recvBuffer,temp);
+             memmove(recvBuffer,recvBuffer+temp,1024000 - temp);
+             recvBuffer[1024000 - temp] = '\0';
+             alReadyRecv -= temp;
+             packets.push_back(this->m_packet);
+           }else
+           {
+               break;
+           }
+        }
+        delete []recvBuffer;
 }
 
 size_t CClientSocket::SendPacketMouseEvent(CPacket packet)

@@ -25,7 +25,6 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
     this->setSecondModelAndStyle();
     this->setThirdModelAndStyle();
     this->setControlStyleSheet();
-    //ui->comboBox_2->addItem(QIcon(":/disk.png"),"测试");
     this->mutex = CreateMutex(nullptr,FALSE,nullptr);
     this->localComboBoxPath = "C:\\";
     this->fileName = "";
@@ -37,8 +36,11 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
 
     //初始化远程主机的盘符信息
     this->initRemoteDiskInfo();
-
+    //初始化本地主机的盘符信息
     this->initLocalDiskInfo();
+    //初始化显示远程文件信息
+    _beginthreadex(nullptr,0,&CFileOperatorDlg::threadShowRemoteFileInfo,this,0,nullptr);
+
     //显示当前路径文件信息
     _beginthreadex(nullptr,0,&CFileOperatorDlg::threadShowFileInfo,this,0,nullptr);
 
@@ -269,6 +271,15 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
 
 }
 
+unsigned WINAPI CFileOperatorDlg::threadShowRemoteFileInfo(LPVOID arg)
+{
+    CFileOperatorDlg* thiz = (CFileOperatorDlg*)arg;
+    thiz->showRemoteFileInfo();
+    _endthreadex(0);
+    return 0;
+}
+
+
 void CFileOperatorDlg::analysisDiskInfoStr(std::string diskInfoStr)
 {
     for(std::string::iterator pos = diskInfoStr.begin(); pos != diskInfoStr.end(); pos++)
@@ -389,6 +400,12 @@ void CFileOperatorDlg::getFileName(QString & fileName,const QModelIndex& index)
     }
 }
 
+void CFileOperatorDlg::secondModelClear()
+{
+    int rowCount = this->m_model2->rowCount();
+    this->m_model2->removeRows(0,rowCount);
+}
+
 void CFileOperatorDlg::firstModelClear()  //频繁的切换路径会出现程序崩溃的问题
 {
     //清除当前二维表中的行文件信息
@@ -470,6 +487,53 @@ unsigned WINAPI CFileOperatorDlg::threadCheckLocalDisk(LPVOID arg)
    _endthreadex(0);
    return 0;
 }
+
+void CFileOperatorDlg::showRemoteFileInfo()
+{
+    CClientContorler* pCtrl = CClientContorler::getInstances();
+    QString currentPath = ui->comboBox_2->currentText();
+    currentPath +="\\";
+    QVector<QStringList> result =  pCtrl->getRemoteFileInfo(currentPath);
+
+    //进行将获取到的数据显示到文件列表中
+
+    //先进行清除列表中的文件信息
+    this->secondModelClear();
+
+    //进行给model赋值，显示在tableView中
+    for(QVector<QStringList>::iterator pos = result.begin();pos != result.end();pos++)
+    {
+        qDebug()<<pos->at(0)<<pos->at(1)<<pos->at(2)<<pos->at(3);
+        QList<QStandardItem*> row;
+        //生成文件名
+        QStandardItem* fileNameItem = new QStandardItem(pos->at(0));
+        fileNameItem->setFlags(fileNameItem->flags() & ~Qt::ItemIsEditable);
+        QString path = ui->comboBox_2->currentText();
+        path +="\\";
+        path += pos->at(0);
+        fileNameItem->setToolTip(path);
+        row.append(fileNameItem);
+
+        //生成文件大小
+        QStandardItem* fileSizeItem = new QStandardItem(pos->at(1));
+        fileSizeItem->setFlags(fileSizeItem->flags() & ~Qt::ItemIsEditable);
+        row.append(fileSizeItem);
+
+        //生成文件类型
+        QStandardItem* fileTypeItem = new QStandardItem(pos->at(2));
+        fileTypeItem->setFlags(fileTypeItem->flags() & ~Qt::ItemIsEditable);
+        row.append(fileTypeItem);
+
+        //生成文件访问时间
+        QStandardItem* fileAcessTime = new QStandardItem(pos->at(3));
+        fileAcessTime->setFlags(fileAcessTime->flags() & ~Qt::ItemIsEditable);
+        row.append(fileAcessTime);
+
+        //将一行添加到模型当中
+        this->m_model2->appendRow(row);
+    }
+}
+
 
 //这个操作是一个耗时的操作想办法优化 暂时没有调用到
 qint64 CFileOperatorDlg::getDirSize(const QFileInfo& dir)

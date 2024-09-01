@@ -22,6 +22,7 @@ public:
     BOOL initSocketMouseEvent();
     BOOL ConnectTest();
     std::string getRemoteDiskInfo();
+    QVector<QStringList> getRemoteFileInfo(QString currentPath);
 private:
     SOCKET m_sockClient;
     SOCKADDR_IN m_sockClientAddr;
@@ -39,6 +40,7 @@ private:
     CClientSocket(const CClientSocket& clientSocket);
     CClientSocket& operator=(const CClientSocket& clientSocket);
     static void releaseInstance();
+    void RecvMultiPackets(std::list<CPacket>& packets);//一次性接收多个包
     class CHelper{
     public:
         CHelper()

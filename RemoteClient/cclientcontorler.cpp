@@ -151,6 +151,11 @@ void CClientContorler::threadSendWatchPacket()
     SetEvent(this->m_watchDlg->m_CloseEvent);
 }
 
+QVector<QStringList> CClientContorler::getRemoteFileInfo(QString currentPath)
+{
+    CClientSocket* pClient = CClientSocket::getInstance();
+    return  pClient->getRemoteFileInfo(currentPath);
+}
 
 CClientContorler* CClientContorler::m_instanse = nullptr;
 CClientContorler::CHelper CClientContorler::m_helper;

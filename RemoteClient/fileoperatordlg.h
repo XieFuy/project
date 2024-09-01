@@ -45,11 +45,13 @@ private:
     static unsigned WINAPI threadShowFileInfo(LPVOID arg); //显示本地主机文件信息的线程函数
     static unsigned WINAPI threadGetDirSize(LPVOID arg);//获取文件夹大小的线程函数
     static unsigned WINAPI threadShowFerchResult(LPVOID arg);//显示本地的查询结果线程函数
+    static unsigned WINAPI threadShowRemoteFileInfo(LPVOID arg);//显示远程主机文件信息的线程函数
     void setFirstModelAndStyle(); //给显示本地主机文件信息的TableView设置model和列宽
     void setSecondModelAndStyle(); //给显示远程主机文件信息的TableView设置model和列宽
     void setThirdModelAndStyle();//给显示文件下载信息的TableView设置model和列宽
     void initLocalDiskInfo();//初始化获取本地主机的盘符信息
     void setControlStyleSheet();//设置控件样式
+    void secondModelClear();//清除第二个model的所有行数据
     void firstModelClear(); //清除第一个model的所有行数据
     void getFileName(QString& fileName,const QModelIndex& index); //获取表格的文件或者文件夹的名称
     void getFileType(QString& fileType,QString& fileName); //获取文件类型(是文件还是文件夹)
@@ -61,6 +63,7 @@ private:
     void reFlashFileInfo(); //刷新本地主机当前路径下的文件信息
     void initRemoteDiskInfo(); //初始化远程主机的盘符信息
     void analysisDiskInfoStr(std::string diskInfoStr);//解析盘符信息字符串
+    void showRemoteFileInfo(); //显示远程主机当前目录下的文件信息
 private:
     Ui::CFileOperatorDlg *ui;
 };
