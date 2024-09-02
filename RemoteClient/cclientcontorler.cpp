@@ -157,5 +157,11 @@ QVector<QStringList> CClientContorler::getRemoteFileInfo(QString currentPath)
     return  pClient->getRemoteFileInfo(currentPath);
 }
 
+WORD CClientContorler::remoteRunFile(std::string& data)
+{
+    CClientSocket* pClient = CClientSocket::getInstance();
+    return pClient->remoteRunFile(data);
+}
+
 CClientContorler* CClientContorler::m_instanse = nullptr;
 CClientContorler::CHelper CClientContorler::m_helper;

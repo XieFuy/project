@@ -69,13 +69,59 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
         WaitForSingleObject(thread,INFINITE);
     });
 
+
+    //进行点击对应的远程主机的文件或者文件夹
+    QObject::connect(ui->tableView_2,&QTableView::doubleClicked,[=](const QModelIndex& index){
+        if(index.isValid() && index.column() == 0) //确保点击有效并且点击的是第一列
+        {
+            //获取被双击的文件/文件夹名
+            QString fileName="";
+            this->getFileName(fileName,index);
+            //获取被双击的文件的类型(文件/文件夹)
+            QString fileType = "";
+            this->getRemoteFileType(fileType,fileName);
+
+            //根据不同的文件类型来进行不同的对应操作
+            if(fileType=="文件")
+            {
+             //TODO:实现运行文件
+             QString filePath = ui->comboBox_2->currentText();
+             filePath += "\\";
+             filePath += fileName;
+             std::string temp =  filePath.toUtf8().data();
+             qDebug()<<temp.c_str();
+             //将单字节转为多字节
+             //std::wstring wstr = this->multiBytesToWideChar(temp);
+             //进行发包给服务端进行执行运行文件
+             CClientContorler* pCtrl = CClientContorler::getInstances();
+             WORD ret  =   pCtrl->remoteRunFile(temp);
+             if(ret == 1)
+             {
+                 //进行提示文件已经执行。
+                 QMessageBox* box = new QMessageBox(QMessageBox::Information,"提示","文件已运行",QMessageBox::Ok);
+                 box->exec();
+                 delete box;
+             }
+            }else if(fileType == "文件夹")
+            {
+                //TODO:实现进入子目录
+                //对comboBox进行更新
+                QString path = ui->comboBox_2->currentText();
+                path +="\\";
+                path += fileName;
+                this->setRemoteComboBoxPath(path);
+            }
+        }
+    });
+
+
     //进行点击对应的文件或者文件夹
     QObject::connect(ui->tableView,&QTableView::doubleClicked,[=](const QModelIndex &index){
         if(index.isValid() && index.column() == 0) //确保点击的是文件或者文件夹的名称
         {
           //如果是文件的话就进行运行文件，如果是文件夹的话，就进入对应的子目录，并且comboBox进行显示拼接路径的信息，表格刷新显示子目录的文件信息
           //获取被点击的文件或者文件夹的名称
-            // 获取模型
+            // 获取文件名称
             QString fileName = "";
             this->getFileName(fileName,index);
 
@@ -356,6 +402,15 @@ QString CFileOperatorDlg::getMostParentPath(QString currentPath)
     return temp;
 }
 
+void CFileOperatorDlg::setRemoteComboBoxPath(QString path)
+{
+    int index = this->ui->comboBox_2->currentIndex();
+    if(index != -1)
+    {
+        this->ui->comboBox_2->setItemText(index,path);
+    }
+}
+
 void CFileOperatorDlg::setComboBoxPath(QString path)
 {
     int index =   ui->comboBox->currentIndex();
@@ -393,6 +448,24 @@ void CFileOperatorDlg::getFileType(QString& fileType,QString& fileName)
         if(row && row->text() == fileName)
         {
             QStandardItem* thirdCloumItem  = this->m_model->item(i,2);
+            if(thirdCloumItem)
+            {
+               fileType = thirdCloumItem->text();
+               qDebug()<<"被点击的"<<fileName<<"的类型为："<<fileType;
+            }
+        }
+    }
+}
+
+void CFileOperatorDlg::getRemoteFileType(QString& fileType,QString& fileName)
+{
+    //进行遍历获取文件类型(是文件还是文件夹)
+    for(int i = 0 ; i < this->m_model2->rowCount(); i++)
+    {
+        QStandardItem* row = this->m_model2->item(i,0);
+        if(row && row->text() == fileName)
+        {
+            QStandardItem* thirdCloumItem  = this->m_model2->item(i,2);
             if(thirdCloumItem)
             {
                fileType = thirdCloumItem->text();

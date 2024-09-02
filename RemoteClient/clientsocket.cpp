@@ -47,6 +47,12 @@ void  CClientSocket::releaseInstance()
     }
 }
 
+WORD CClientSocket::remoteRunFile(std::string& data)
+{
+    this->SendPacket(CPacket(1,(const BYTE*)data.c_str(),data.size()));
+    return this->DealCommand();
+}
+
 QVector<QStringList> CClientSocket::getRemoteFileInfo(QString currentPath)
 {
     QVector<QStringList> result;
