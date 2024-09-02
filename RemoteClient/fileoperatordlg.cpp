@@ -27,6 +27,7 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
     this->setControlStyleSheet();
     this->mutex = CreateMutex(nullptr,FALSE,nullptr);
     this->localComboBoxPath = "C:\\";
+    this->remoteComboBoxPath = "C:\\";
     this->fileName = "";
     this->fileType = "";
 //数据添加测试
@@ -56,6 +57,16 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
         HANDLE thread = (HANDLE)_beginthreadex(nullptr,0,&CFileOperatorDlg::threadShowFileInfo,this,0,nullptr);
         WaitForSingleObject(thread,INFINITE);
         ReleaseMutex(this->mutex);
+    });
+
+    //切换磁盘信息进行更新远程主机的文件信息
+    QObject::connect(this->ui->comboBox_2,&QComboBox::currentTextChanged,[=](){
+        QString path = ui->comboBox_2->currentText();
+        path += "\\";
+        this->secondModelClear();
+        this->remoteComboBoxPath = path;
+        HANDLE thread = (HANDLE) _beginthreadex(nullptr,0,&CFileOperatorDlg::threadShowRemoteFileInfo,this,0,nullptr);
+        WaitForSingleObject(thread,INFINITE);
     });
 
     //进行点击对应的文件或者文件夹
@@ -491,12 +502,10 @@ unsigned WINAPI CFileOperatorDlg::threadCheckLocalDisk(LPVOID arg)
 void CFileOperatorDlg::showRemoteFileInfo()
 {
     CClientContorler* pCtrl = CClientContorler::getInstances();
-    QString currentPath = ui->comboBox_2->currentText();
-    currentPath +="\\";
+    QString currentPath = this->remoteComboBoxPath;
     QVector<QStringList> result =  pCtrl->getRemoteFileInfo(currentPath);
 
     //进行将获取到的数据显示到文件列表中
-
     //先进行清除列表中的文件信息
     this->secondModelClear();
 

@@ -37,6 +37,7 @@ private:
     QStandardItemModel* tempModel = nullptr;
     HANDLE mutex;
     QString localComboBoxPath; //硬盘磁盘
+    QString remoteComboBoxPath;
     DeleteButton * deleteButton = nullptr;
     QString fileName;
     QString fileType;
