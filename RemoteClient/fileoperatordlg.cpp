@@ -160,6 +160,22 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
        this->getFileType(this->fileType,this->fileName);
     });
 
+    //远程主机返回上一级目录
+    QObject::connect(this->ui->pushButton_6,&QPushButton::clicked,[=](){
+        QString currentPath = this->ui->comboBox_2->currentText();
+        qDebug()<<currentPath;
+        QString parentPath =  this->getParentFilePath(currentPath);
+        qDebug()<<parentPath;
+        if(parentPath != "")
+        {
+         QString temp = parentPath;
+         temp +="\\";
+         this->remoteComboBoxPath = temp;
+         //更改目录路径显示
+         this->setRemoteComboBoxPath(parentPath);
+        }
+    });
+
     //返回上一级目录
     QObject::connect(ui->pushButton,&QPushButton::clicked,[=](){
         QString currentPath = this->ui->comboBox->currentText();
@@ -176,6 +192,23 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
         }
     });
 
+    //远程主机返回上一级目录
+    QObject::connect(ui->pushButton_7,&QPushButton::clicked,[=](){
+        QString currentPath = this->ui->comboBox_2->currentText();
+        qDebug()<<currentPath;
+        QString parentPath =  this->getParentFilePath(currentPath);
+        qDebug()<<parentPath;
+        if(parentPath != "")
+        {
+         QString temp = parentPath;
+         temp +="\\";
+         this->remoteComboBoxPath = temp;
+         //更改目录路径显示
+         this->setRemoteComboBoxPath(parentPath);
+        }
+    });
+
+
     //返回上一级目录
     QObject::connect(ui->pushButton_2,&QPushButton::clicked,[=](){
         QString currentPath = this->ui->comboBox->currentText();
@@ -190,6 +223,15 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
          //更改目录路径显示
          this->setComboBoxPath(parentPath);
         }
+    });
+
+    //远程主机直接回到盘符的最初目录
+    QObject::connect(ui->pushButton_8,&QPushButton::clicked,[=](){
+        QString path = this->getMostParentPath(ui->comboBox_2->currentText());
+        QString temp = path;
+        temp +="\\";
+        this->remoteComboBoxPath = temp;
+        this->setRemoteComboBoxPath(path);
     });
 
     //直接回到盘符的最初目录
@@ -426,7 +468,7 @@ QString CFileOperatorDlg::getParentFilePath(QString currentPath)
    int lastIndex = currentPath.lastIndexOf("\\");
    if(lastIndex != -1)
    {
-       parentPath = currentPath.left(lastIndex); //进行减一，去除掉双斜杠号，避免导致路径解析的不正确
+       parentPath = currentPath.left(lastIndex);
    }
    return parentPath;
 }

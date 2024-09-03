@@ -73,7 +73,7 @@ QVector<QStringList> CClientSocket::getRemoteFileInfo(QString currentPath)
         //进行对每一行的数据进行解析
        for(QString::iterator pos = str.begin();pos != str.end();pos++)
        {
-           if(*pos != '-')
+           if(*pos != '#')
            {
                currentPart.append(*pos);
            }else
