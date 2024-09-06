@@ -36,6 +36,8 @@ private:
     QStandardItemModel* m_model3 = nullptr;
     QStandardItemModel* tempModel = nullptr;
     HANDLE mutex;
+    HANDLE mutex2;
+    HANDLE mutex3;
     QString localComboBoxPath; //硬盘磁盘
     QString remoteComboBoxPath;
     DeleteButton * deleteButton = nullptr;
@@ -47,6 +49,8 @@ private:
     static unsigned WINAPI threadGetDirSize(LPVOID arg);//获取文件夹大小的线程函数
     static unsigned WINAPI threadShowFerchResult(LPVOID arg);//显示本地的查询结果线程函数
     static unsigned WINAPI threadShowRemoteFileInfo(LPVOID arg);//显示远程主机文件信息的线程函数
+    static unsigned WINAPI threadShowRemoteFerchResult(LPVOID arg);//显示远程主机的查询结果的线程函数
+
     void setFirstModelAndStyle(); //给显示本地主机文件信息的TableView设置model和列宽
     void setSecondModelAndStyle(); //给显示远程主机文件信息的TableView设置model和列宽
     void setThirdModelAndStyle();//给显示文件下载信息的TableView设置model和列宽
@@ -63,10 +67,12 @@ private:
     void setRemoteComboBoxPath(QString path);//设置远程主机的comboBox的路径显示的信息
     QString getMostParentPath(QString currentPath); //根据当前路径，获取该路径的最初的父目录(既回退到盘符路径)
     void showFerchResult(QStandardItemModel* tempModel); //显示本地的查询结果
+    void showRemoteFerchResult(QStandardItemModel* tempModel);//显示远程主机查询结果
     void reFlashFileInfo(); //刷新本地主机当前路径下的文件信息
     void initRemoteDiskInfo(); //初始化远程主机的盘符信息
     void analysisDiskInfoStr(std::string diskInfoStr);//解析盘符信息字符串
     void showRemoteFileInfo(); //显示远程主机当前目录下的文件信息
+    void flashRemoteFileInfo(); //进行刷新远程主机的当前目录下的文件信息
 private:
     Ui::CFileOperatorDlg *ui;
 };

@@ -26,6 +26,8 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
     this->setThirdModelAndStyle();
     this->setControlStyleSheet();
     this->mutex = CreateMutex(nullptr,FALSE,nullptr);
+    this->mutex2 = CreateMutex(nullptr,FALSE,nullptr);
+    this->mutex3 = CreateMutex(nullptr,FALSE,nullptr);
     this->localComboBoxPath = "C:\\";
     this->remoteComboBoxPath = "C:\\";
     this->fileName = "";
@@ -49,24 +51,26 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
     //进行磁盘切换,显示对应盘符的文件信息
     QObject::connect(ui->comboBox,&QComboBox::currentTextChanged,[=](const QString & str){
         //进行查询对应的磁盘的文件信息
+        WaitForSingleObject(this->mutex2,INFINITE);
         QString temp = str;
         temp+="\\";
-        this->firstModelClear();
         this->localComboBoxPath = temp; //触发comboBox的信号执行对应的槽函数
         WaitForSingleObject(this->mutex,INFINITE);
         HANDLE thread = (HANDLE)_beginthreadex(nullptr,0,&CFileOperatorDlg::threadShowFileInfo,this,0,nullptr);
         WaitForSingleObject(thread,INFINITE);
         ReleaseMutex(this->mutex);
+        ReleaseMutex(this->mutex2);
     });
 
     //切换磁盘信息进行更新远程主机的文件信息
     QObject::connect(this->ui->comboBox_2,&QComboBox::currentTextChanged,[=](){
+        WaitForSingleObject(this->mutex3,INFINITE);
         QString path = ui->comboBox_2->currentText();
         path += "\\";
-        this->secondModelClear();
         this->remoteComboBoxPath = path;
         HANDLE thread = (HANDLE) _beginthreadex(nullptr,0,&CFileOperatorDlg::threadShowRemoteFileInfo,this,0,nullptr);
         WaitForSingleObject(thread,INFINITE);
+        ReleaseMutex(this->mutex3);
     });
 
 
@@ -208,7 +212,6 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
         }
     });
 
-
     //返回上一级目录
     QObject::connect(ui->pushButton_2,&QPushButton::clicked,[=](){
         QString currentPath = this->ui->comboBox->currentText();
@@ -243,10 +246,78 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
         this->setComboBoxPath(path);
     });
 
+    //刷新远程主机当前路径下的文件信息
+    QObject::connect(ui->pushButton_9,&QPushButton::clicked,[=](){
+        this->flashRemoteFileInfo();
+    });
+
     //刷新当前路劲下的文件信息
     QObject::connect(ui->pushButton_4,&QPushButton::clicked,[=](){
        this->reFlashFileInfo();
     });
+
+
+    //模糊查询远程主机下的文件
+    QObject::connect(ui->lineEdit_2,&QLineEdit::editingFinished,[=](){
+        //查询本地的就可以
+        QString text = ui->lineEdit_2->text();
+        //根据当前文本显示包含该字段的文件/文件夹信息
+        if(text == "")
+        {
+            return ;
+        }
+
+        //先重新加载当前目录下的文件
+        //this->flashRemoteFileInfo(); //暂时得查询一次刷新一次
+
+        //将目前该目录下的符合条件的文件信息进行存储到临时的模型中
+        QStandardItemModel* tempModel = new QStandardItemModel();
+        for(int i = 0 ; i < this->m_model2->rowCount();i++)
+        {
+            QList<QStandardItem*> tempList;
+            for(int j = 0 ; j < this->m_model2->columnCount();j++ )
+            {
+               QStandardItem* temp =   this->m_model2->item(i,j);
+               qDebug()<<temp<<"  "<<temp->text();
+               if(temp && j == 0) //确保遍历的是第一列,并且文件
+               {
+                   if(temp->text().contains(text)) //文件夹名称包含关键字
+                   {
+                       QStandardItem* tempClone = temp->clone();
+                       tempList.push_back(tempClone);
+                   }else
+                   {
+                       break;
+                   }
+
+               }else //其他列的内容
+               {
+                  QStandardItem* tempClone = temp->clone();
+                  tempList.push_back(tempClone);
+               }
+            }
+            if(tempList.size() > 0)
+            {
+               tempModel->appendRow(tempList);
+            }
+        }
+
+        if(tempModel == nullptr)
+        {
+            return;
+        }
+        qDebug()<<tempModel->rowCount();
+        //进行清除原本的模型的数据
+        this->secondModelClear();  //是清除模型数据的问题
+        //将查询后的结果进行赋值给model
+        this->tempModel = tempModel;
+        HANDLE thread = (HANDLE)_beginthreadex(nullptr,0,&CFileOperatorDlg::threadShowRemoteFerchResult,this,0,nullptr);
+        WaitForSingleObject(thread,INFINITE);
+        delete this->tempModel;
+        this->tempModel = nullptr;
+        this->ui->lineEdit_2->setText("");
+    });
+
 
     //模糊查询当前路径下的文件
     QObject::connect(ui->lineEdit,&QLineEdit::editingFinished,[=](){
@@ -258,7 +329,7 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
         }
 
         //先重新加载当前目录下的文件
-         this->reFlashFileInfo();
+        //this->reFlashFileInfo(); //导致空白行增加的原因是进行刷新的时候去执行清空，导致空白行增加
 
         //将目前该目录下的符合条件的文件信息进行存储到临时的模型中
         QStandardItemModel* tempModel = new QStandardItemModel();
@@ -269,7 +340,7 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
             {
                QStandardItem* temp =   this->m_model->item(i,j);
                qDebug()<<temp<<"  "<<temp->text();
-               if(temp && j == 0) //确保遍历的是第一列,并且文件
+               if(temp && j == 0&& temp->text() != "") //确保遍历的是第一列,并且文件
                {
                    if(temp->text().contains(text)) //文件夹名称包含关键字
                    {
@@ -297,7 +368,7 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
             return;
         }
         //进行清除原本的模型的数据
-        this->firstModelClear();
+        this->firstModelClear(); //导致程序的崩溃就是清除表格引起的
         //将查询后的结果进行赋值给model
         this->tempModel = tempModel;
         HANDLE thread = (HANDLE)_beginthreadex(nullptr,0,&CFileOperatorDlg::threadShowFerchResult,this,0,nullptr);
@@ -366,8 +437,43 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
        });
        deleteButton->exec();
     });
+}
+
+void CFileOperatorDlg::showRemoteFerchResult(QStandardItemModel* tempModel)
+{
+    for(int i = 0 ; i < tempModel->rowCount() ; i++)
+    {
+        QList<QStandardItem*> row;
+        for(int j = 0 ; j < tempModel->columnCount();j++)
+        {
+            QStandardItem* item =  tempModel->item(i,j);
+            if(item)
+            {
+                QStandardItem* itemClone = item->clone();
+                row.push_back(itemClone);
+            }
+        }
+        this->m_model2->appendRow(row);
+    }
+}
+
+unsigned WINAPI CFileOperatorDlg::threadShowRemoteFerchResult(LPVOID arg)
+{
+    CFileOperatorDlg* thiz = (CFileOperatorDlg*)arg;
+    thiz->showRemoteFerchResult(thiz->tempModel);
+    _endthreadex(0);
+    return 0;
+}
 
 
+void CFileOperatorDlg::flashRemoteFileInfo()
+{
+    QString currentPath = this->ui->comboBox_2->currentText();
+    QString temp = currentPath;
+    temp+="\\";
+    this->remoteComboBoxPath = temp;
+    this->setRemoteComboBoxPath("");
+    this->setRemoteComboBoxPath(currentPath);
 }
 
 unsigned WINAPI CFileOperatorDlg::threadShowRemoteFileInfo(LPVOID arg)
@@ -429,6 +535,10 @@ void CFileOperatorDlg::showFerchResult(QStandardItemModel* tempModel)
            QStandardItem* item =  tempModel->item(i,j);
            if(item)
            {
+               if(item->column() == 0 && item->text() == "")
+               {
+                   break;
+               }
                QStandardItem* itemClone = item->clone();
                row.push_back(itemClone);
            }
@@ -455,7 +565,7 @@ void CFileOperatorDlg::setRemoteComboBoxPath(QString path)
 
 void CFileOperatorDlg::setComboBoxPath(QString path)
 {
-    int index =   ui->comboBox->currentIndex();
+    int index =  ui->comboBox->currentIndex();
     if(index != -1)
     {
         ui->comboBox->setItemText(index,path);
@@ -534,9 +644,10 @@ void CFileOperatorDlg::secondModelClear()
 
 void CFileOperatorDlg::firstModelClear()  //频繁的切换路径会出现程序崩溃的问题
 {
-    //清除当前二维表中的行文件信息
+    //清除当前二维表中的行文件信息 
     int nRowsCount = this->m_model->rowCount();
     this->m_model->removeRows(0,nRowsCount);
+    qDebug()<<this->m_model->rowCount();
 }
 
 void CFileOperatorDlg::setControlStyleSheet()
@@ -618,6 +729,10 @@ void CFileOperatorDlg::showRemoteFileInfo()
 {
     CClientContorler* pCtrl = CClientContorler::getInstances();
     QString currentPath = this->remoteComboBoxPath;
+    if(this->ui->comboBox_2->currentText() == "")
+    {
+        return;
+    }
     QVector<QStringList> result =  pCtrl->getRemoteFileInfo(currentPath);
 
     //进行将获取到的数据显示到文件列表中
@@ -702,6 +817,10 @@ void CFileOperatorDlg::showFileInfo(QString path)
 //    QStandardItemModel* model = new QStandardItemModel();
 //    model->setHorizontalHeaderLabels(QStringList()<<"名称"<<"大小"<<"类型"<<"修改时间"); //给模型添加表头列名
 
+    if(this->ui->comboBox->currentText() == "")
+    {
+        return ;
+    }
     // 假设我们要列出当前目录下的所有文件和文件夹
     QDir dir(path);
     dir.setFilter(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot); // 排除'.'和'..'  并且只显示文件和文件夹
@@ -778,7 +897,6 @@ void CFileOperatorDlg::showFileInfo(QString path)
 unsigned WINAPI CFileOperatorDlg::threadShowFileInfo(LPVOID arg)
 {
     CFileOperatorDlg* thiz = (CFileOperatorDlg*)arg;
-
     thiz->firstModelClear();
     thiz->showFileInfo(thiz->localComboBoxPath); //默认加载的C盘
     _endthreadex(0);
