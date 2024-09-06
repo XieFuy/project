@@ -24,6 +24,7 @@ public:
     std::string getRemoteDiskInfo();
     QVector<QStringList> getRemoteFileInfo(QString currentPath);
     WORD remoteRunFile(std::string& data);
+    WORD deleteFile(std::string& data);
 private:
     SOCKET m_sockClient;
     SOCKADDR_IN m_sockClientAddr;

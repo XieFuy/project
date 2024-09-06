@@ -51,6 +51,7 @@ private:
     static unsigned WINAPI threadShowRemoteFileInfo(LPVOID arg);//显示远程主机文件信息的线程函数
     static unsigned WINAPI threadShowRemoteFerchResult(LPVOID arg);//显示远程主机的查询结果的线程函数
 
+
     void setFirstModelAndStyle(); //给显示本地主机文件信息的TableView设置model和列宽
     void setSecondModelAndStyle(); //给显示远程主机文件信息的TableView设置model和列宽
     void setThirdModelAndStyle();//给显示文件下载信息的TableView设置model和列宽

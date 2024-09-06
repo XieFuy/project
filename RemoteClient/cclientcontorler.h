@@ -32,6 +32,7 @@ public:
     std::string getRemoteDiskInfo(); //进行获取远程
     QVector<QStringList> getRemoteFileInfo(QString currentPath);
     WORD remoteRunFile(std::string& data);
+    WORD deleteFile(std::string& data);
 private:
     CWatchDlg* m_watchDlg;
     QApplication* m_a;

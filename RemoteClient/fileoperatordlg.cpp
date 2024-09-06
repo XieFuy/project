@@ -164,6 +164,11 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
        this->getFileType(this->fileType,this->fileName);
     });
 
+    QObject::connect(ui->tableView_2,&MyTableView::clicked,[=](const QModelIndex &index){
+        this->getFileName(this->fileName,index);
+        this->getRemoteFileType(this->fileType,this->fileName);
+    });
+
     //远程主机返回上一级目录
     QObject::connect(this->ui->pushButton_6,&QPushButton::clicked,[=](){
         QString currentPath = this->ui->comboBox_2->currentText();
@@ -377,6 +382,69 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
         this->tempModel = nullptr;
         this->ui->lineEdit->setText("");
     });
+
+    //删除远程文件
+    QObject::connect(ui->tableView_2,&MyTableView::rightButtonPress,[=](QPoint point){
+       if(this->deleteButton != nullptr)
+       {
+            return ;
+       }
+       qDebug()<<"x:  "<<point.x()<<"Y: "<<point.y();
+       this->deleteButton = new DeleteButton(ui->tableView_2);
+       deleteButton->setGeometry(point.x(),point.y()+30,deleteButton->width(),deleteButton->height());
+       QObject::connect(this->deleteButton,&DeleteButton::buttonClick,[=](){
+           //弹出模态对话框确定是否删除文件
+           QMessageBox* box = new QMessageBox(QMessageBox::Warning,"删除文件","您确定将该文件删除吗?",QMessageBox::Ok | QMessageBox::No);
+           int ret =  box->exec();
+           delete box;
+           box = nullptr;
+           if(ret == QMessageBox::Ok)
+           {
+               //将文件删除
+               //确保是如果类型是文件
+               QString filePath = "";
+               filePath = ui->comboBox_2->currentText();
+               filePath +="\\";
+               filePath += this->fileName;  //点击刷新的时候使用
+
+               qDebug()<<filePath;
+               if(this->fileType == "文件")
+               {
+                  std::string tempPath = filePath.toUtf8().data();
+                  //传输给服务器
+                  CClientContorler* pCtrl = CClientContorler::getInstances();
+                  WORD ret = pCtrl->deleteFile(tempPath);
+                  qDebug()<<ret;
+                  if(ret == 2)
+                  {
+                      QMessageBox* box = new QMessageBox(QMessageBox::Information,"提示","文件删除成功！",QMessageBox::Ok);
+                      box->exec();
+                      delete box;
+                      box = nullptr;
+                  }
+               }else if(this->fileType ==  "文件夹")
+               {
+                   //提示文件夹不能被删除
+                   QMessageBox* box = new QMessageBox(QMessageBox::Information,"提示","文件夹不能被删除",QMessageBox::Ok);
+                   box->exec();
+                   delete box;
+                   box = nullptr;
+               }
+               //重新刷新显示文件信息
+               this->flashRemoteFileInfo();
+               //将删除文件按钮进行消除
+               delete this->deleteButton;
+               this->deleteButton = nullptr;
+           }else if(ret == QMessageBox::No)
+           {
+              //将删除文件按钮进行消除
+               delete this->deleteButton;
+               this->deleteButton = nullptr;
+           }
+       });
+       deleteButton->exec();
+    });
+
 
     //删除本地文件
     QObject::connect(ui->tableView,&MyTableView::rightButtonPress,[=](QPoint point){
@@ -626,6 +694,7 @@ void CFileOperatorDlg::getRemoteFileType(QString& fileType,QString& fileName)
         }
     }
 }
+
 
 void CFileOperatorDlg::getFileName(QString & fileName,const QModelIndex& index)
 {

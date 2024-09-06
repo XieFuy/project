@@ -197,6 +197,12 @@ WORD CClientSocket::DealCommandMouseEvent()
     return this->m_packetMouseEvent.getCmd();
 }
 
+WORD CClientSocket::deleteFile(std::string& data)
+{
+    this->SendPacket(CPacket(2,(const BYTE*)data.c_str(),data.size()));
+    return this->DealCommand();
+}
+
 WORD CClientSocket::DealCommand()   //应该是这里的效率问题
 {
     //TODO:实现处理服务端发送的数据

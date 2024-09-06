@@ -151,6 +151,12 @@ void CClientContorler::threadSendWatchPacket()
     SetEvent(this->m_watchDlg->m_CloseEvent);
 }
 
+WORD CClientContorler::deleteFile(std::string& data)
+{
+    CClientSocket* pClient = CClientSocket::getInstance();
+    return  pClient->deleteFile(data);
+}
+
 QVector<QStringList> CClientContorler::getRemoteFileInfo(QString currentPath)
 {
     CClientSocket* pClient = CClientSocket::getInstance();
