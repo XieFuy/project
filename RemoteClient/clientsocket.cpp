@@ -57,11 +57,12 @@ QVector<QStringList> CClientSocket::getRemoteFileInfo(QString currentPath)
 {
     QVector<QStringList> result;
     std::string temp = currentPath.toUtf8().data();
+    qDebug()<<"temp: "<<temp.c_str();
     size_t ret =  this->SendPacket(CPacket(6,(const BYTE*)temp.c_str(),temp.size()));
     //进行接收数据包
     std::list<CPacket> recvList;
     this->RecvMultiPackets(recvList);
-    qDebug()<<recvList.size();
+    qDebug()<<"接收多个包后的个数："<<recvList.size();
 
     QString  currentPart ;
     QStringList partList;
@@ -215,7 +216,7 @@ WORD CClientSocket::DealCommand()   //应该是这里的效率问题
     size_t alReadlyToRecv = 0;
     size_t stepSize = 102400;
 //    char* pData = this->m_recvBuffer.data();
-     char* pData = recvBuffer;
+    char* pData = recvBuffer;
 
     //接收单个数据包的所有数据
     while(true)
@@ -350,6 +351,16 @@ BOOL CClientSocket::ConnectToServer()
      size_t ret = this->SendPacket(packet);
      WORD cmd =  this->DealCommand();
      return this->m_packet.getData();
+ }
+
+CPacket CClientSocket::downLoadFileFromRemote(std::string& data)
+ {
+     //data是选择下载远程文件的路径信息
+     //先发送下载请求数据包
+     //进行发送获取文件大小的数据包
+     this->SendPacket(CPacket(3,(const BYTE*)data.c_str(),data.size())); //发送空包进行获取文件大小
+     this->DealCommand();
+     return  this->m_packet;
  }
 
 CClientSocket* CClientSocket::m_instance = nullptr;

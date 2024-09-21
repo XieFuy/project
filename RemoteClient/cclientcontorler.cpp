@@ -100,6 +100,13 @@ void CClientContorler::WatchScreen(QString strNum)
     this->m_watchDlg->exec();
 }
 
+CPacket CClientContorler::downLoadFileFromRemote(std::string& data)
+{
+     CClientSocket* pClient = CClientSocket::getInstance();
+     return  pClient->downLoadFileFromRemote(data);
+}
+
+
 void CClientContorler::RemoteFileOperator(QString num)
 {
     if(this->m_fileOperatorDlg == nullptr)

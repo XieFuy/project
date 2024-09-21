@@ -28,6 +28,9 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
     this->mutex = CreateMutex(nullptr,FALSE,nullptr);
     this->mutex2 = CreateMutex(nullptr,FALSE,nullptr);
     this->mutex3 = CreateMutex(nullptr,FALSE,nullptr);
+    this->m_event = CreateEvent(nullptr,FALSE,FALSE,nullptr);
+    this->m_event2 = CreateEvent(nullptr,FALSE,FALSE,nullptr);
+    this->m_event3 = CreateEvent(nullptr,FALSE,FALSE,nullptr);
     this->localComboBoxPath = "C:\\";
     this->remoteComboBoxPath = "C:\\";
     this->fileName = "";
@@ -113,11 +116,11 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
                 QString path = ui->comboBox_2->currentText();
                 path +="\\";
                 path += fileName;
+                qDebug()<<path;
                 this->setRemoteComboBoxPath(path);
             }
         }
     });
-
 
     //进行点击对应的文件或者文件夹
     QObject::connect(ui->tableView,&QTableView::doubleClicked,[=](const QModelIndex &index){
@@ -167,6 +170,7 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
     QObject::connect(ui->tableView_2,&MyTableView::clicked,[=](const QModelIndex &index){
         this->getFileName(this->fileName,index);
         this->getRemoteFileType(this->fileType,this->fileName);
+        this->getRemoteFileSize(this->fileSize,this->fileName);
     });
 
     //远程主机返回上一级目录
@@ -505,6 +509,219 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
        });
        deleteButton->exec();
     });
+
+    //本地主机向远程主机进行文件断点传输(暂未实现断点)
+    QObject::connect(ui->pushButton_10,&QPushButton::clicked,[=](){
+
+        //如果点击的是文件夹就进行提示文件夹不能进行传输
+        if(this->fileType == "文件夹")
+        {
+            QMessageBox* box = new QMessageBox(QMessageBox::Information,"提示","文件夹不能进行发送！",QMessageBox::Ok);
+            box->exec();
+            delete box;
+            return;
+        }
+
+        //获取远程主机的完成的文件路径
+        QString filePath = ui->comboBox_2->currentText();
+        filePath += "\\";
+        filePath += this->fileName;
+        qDebug()<<"被下载的文件路径为："<<filePath;
+
+        //弹出本地文件文件对话框选择保存的路径
+        QString directory = QFileDialog::getExistingDirectory(this,tr("请选择保存文件的文件夹"),QDir::homePath());
+        if(!directory.isEmpty())
+        {                              
+            //进行文件下载的时候放在子线程中去执行
+            this->m_filePath = filePath;
+            this->m_directory = directory;
+            _beginthreadex(nullptr,0,&CFileOperatorDlg::threadWriteFileData,this,0,nullptr);
+            //阻塞等到客户端接收到所有的数据包后判断
+            WaitForSingleObject(this->m_event,INFINITE);
+            //权限不足提示
+            if(this->m_packet.getCmd() == 100)
+            {
+                QMessageBox* box = new QMessageBox(QMessageBox::Information,"提示","由于权限不足，无法进行下载该文件",QMessageBox::Ok);
+                box->exec();
+                delete box;
+            }else if(this->m_packet.getCmd() == 3 )
+            {
+                this->addDownLoadInfo(this->m_filePath,this->m_directory);
+            }
+            SetEvent(this->m_event2);
+            ResetEvent(this->m_event2);
+
+            QTimer* timer = new QTimer(this);
+            connect(timer,&QTimer::timeout,[=](){
+                if(this->m_progress <= 100.0)
+                {
+                    QProgressBar* p = this->m_progressBarList.front();
+                    double temp = this->m_progress;
+                    p->setValue(temp);
+                    SetEvent(this->m_event3);
+                    ResetEvent(this->m_event3);
+                    if(this->m_progress == 100.0)
+                    {
+                        this->m_progress = 0;
+                        this->m_progressBarList.pop_front();
+                        timer->stop();
+                    }
+                }
+            });
+            timer->start(0.0001);
+        }
+    });
+
+
+
+    //远程主机向本地主机进行文件断点传输(暂未实现断点)
+}
+
+unsigned WINAPI CFileOperatorDlg::threadShowProgressBar(LPVOID arg)
+{
+    CFileOperatorDlg* thiz = (CFileOperatorDlg*)arg;
+    //thiz->showProgressBar();
+    _endthreadex(0);
+    return 0;
+}
+
+void CFileOperatorDlg::showProgressBar()
+{
+    //进行进度条显示
+    while(this->m_progress != 100.0)
+    {
+      QProgressBar* p = this->m_progressBarList.front();
+      double temp = this->m_progress;
+      p->setValue(temp);
+      SetEvent(this->m_event3);
+      ResetEvent(this->m_event3);
+    }
+    this->m_progress = 0;
+    this->m_progressBarList.pop_front();
+}
+
+unsigned WINAPI CFileOperatorDlg::threadWriteFileData(LPVOID arg)
+{
+    CFileOperatorDlg* thiz = (CFileOperatorDlg*)arg;
+    thiz->writeFileData(thiz->m_directory,thiz->m_result,thiz->m_filePath);
+    _endthreadex(0);
+    return 0;
+}
+
+void CFileOperatorDlg::writeFileData(QString& directory,std::list<CPacket>& result,QString& filePath)
+{
+    //先获取需要下载的文件的字节总数
+    std::string data = filePath.toUtf8().data();
+    data.push_back('#');
+    CClientContorler* pCtrl = CClientContorler::getInstances();
+    this->m_packet =  pCtrl->downLoadFileFromRemote(data);
+    SetEvent(this->m_event);
+    ResetEvent(this->m_event);
+    //阻塞，等到判断对话框进行显示完毕后，再往下走
+    WaitForSingleObject(this->m_event2,INFINITE);
+    //判断是否权限足够   
+    //权限不足提示
+    if(this->m_packet.getCmd() == 100)
+    {
+        qDebug()<<"子线程：文件权限不足！";
+        return ;
+    }
+
+    long long lenght ;
+    long long alReadyRecv = 0;
+    //如果传递过来的数据包是文件大小进行获取文件大小
+    if(this->m_packet.getCmd() == 3)
+    {
+        memcpy(&lenght,this->m_packet.getData().c_str(),this->m_packet.getData().size());
+        qDebug()<<"文件字节大小为："<<lenght;
+    }
+
+    QString tempFilePath = directory;
+    tempFilePath += "/";
+    tempFilePath += this->fileName;
+
+    std::string temp = tempFilePath.toUtf8().data();
+    std::wstring wTemp = this->multiBytesToWideChar(temp);
+
+    //进行获取到文件数据后进行个写入文件
+    FILE* pFile = _wfopen(wTemp.data(),L"wb+");
+    if(pFile == nullptr)
+    {
+        qDebug()<<"文件写入失败:  "<<__FILE__<<__LINE__<<__FUNCTION__<<strerror(errno);
+        return ;
+    }
+
+    //进行循环写入文件
+    while(alReadyRecv < lenght)
+    {
+        std::string temp = filePath.toUtf8().data();
+        this->m_packet =  pCtrl->downLoadFileFromRemote(temp);
+        size_t size =   fwrite(this->m_packet.getData().c_str(),1,this->m_packet.getData().size(),pFile);
+        alReadyRecv += size;
+        long double tempLenght = lenght;
+        long double tempAlreadyRecv = alReadyRecv;
+        this->m_progress = (tempAlreadyRecv / tempLenght) * 100;
+        WaitForSingleObject(this->m_event3,INFINITE);
+    }
+    fclose(pFile);   
+}
+
+void CFileOperatorDlg::addDownLoadInfo(QString& filePath,QString& directory)
+{
+    //向传输列表中添加行
+    int rowCount = ui->tableWidget->rowCount();
+    ui->tableWidget->setRowCount(rowCount + 1);
+    qDebug()<<rowCount;
+    //文件名
+    QTableWidgetItem* nameItem = new QTableWidgetItem(this->fileName);
+    ui->tableWidget->setItem(rowCount,0,nameItem);
+
+    //进度
+    QProgressBar* progressBar = new QProgressBar();
+    progressBar->setValue(0);
+    this->m_progressBarList.push_back(progressBar);
+    ui->tableWidget->setCellWidget(rowCount,1,progressBar);
+    //delete progressBar;
+
+    //大小
+    QTableWidgetItem* sizeItem = new QTableWidgetItem(this->fileSize);
+    ui->tableWidget->setItem(rowCount,2,sizeItem);
+
+    //发送路径
+    QTableWidgetItem* sendPath = new QTableWidgetItem(filePath);
+    ui->tableWidget->setItem(rowCount,3,sendPath);
+    //接收路径
+    QTableWidgetItem* recvPath = new QTableWidgetItem(directory);
+    ui->tableWidget->setItem(rowCount,4,recvPath);
+
+    //方向
+    QTableWidgetItem* direction = new QTableWidgetItem("下载");
+    ui->tableWidget->setItem(rowCount,5,direction);
+    //删除
+    QPushButton* btn = new QPushButton();
+    btn->setStyleSheet("QPushButton{background-color:rgba(0,0,0,0);} QPushButton:hover{background-color:rgb(221,58,95);}");
+    btn->setIconSize(QSize(30,30));
+    btn->setIcon(QIcon(":/delete.png"));
+    this->m_pushuBtnList.push_back(btn);
+    ui->tableWidget->setCellWidget(rowCount,6,btn);
+}
+
+void CFileOperatorDlg::getRemoteFileSize(QString& fileSize,QString& fileName)
+{
+    //进行遍历获取文件大小
+    for(int i = 0 ; i < this->m_model2->rowCount(); i++)
+    {
+        QStandardItem* row = this->m_model2->item(i,0);
+        if(row && row->text() == fileName)
+        {
+            QStandardItem* thirdCloumItem  = this->m_model2->item(i,1);
+            if(thirdCloumItem)
+            {
+               fileSize = thirdCloumItem->text();
+               qDebug()<<"被点击的"<<fileName<<"的类型为："<<fileSize;
+            }
+        }
+    }
 }
 
 void CFileOperatorDlg::showRemoteFerchResult(QStandardItemModel* tempModel)
@@ -747,14 +964,15 @@ void CFileOperatorDlg::setThirdModelAndStyle()
     this->m_model3 = new QStandardItemModel();
     this->m_model3->setHorizontalHeaderLabels(QStringList()<<"名称"<<"进度"<<"大小"<<"发送路径"<<"接收路径"<<"方向"<<"删除");
 
-    ui->tableView_3->setModel(this->m_model3);
-    ui->tableView_3->setColumnWidth(0,ui->tableView_3->width()/14*2);
-    ui->tableView_3->setColumnWidth(1,ui->tableView_3->width()/14);
-    ui->tableView_3->setColumnWidth(2,ui->tableView_3->width()/14);
-    ui->tableView_3->setColumnWidth(3,ui->tableView_3->width()/14*4);
-    ui->tableView_3->setColumnWidth(4,ui->tableView_3->width()/14*4);
-    ui->tableView_3->setColumnWidth(5,ui->tableView_3->width()/14);
-    ui->tableView_3->setColumnWidth(6,ui->tableView_3->width()/14);
+    ui->tableWidget->setColumnCount(7); //设置表的列
+    ui->tableWidget->setHorizontalHeaderLabels(QStringList()<<"名称"<<"进度"<<"大小"<<"发送路径"<<"接收路径"<<"方向"<<"删除");
+    ui->tableWidget->setColumnWidth(0,ui->tableWidget->width()/14*2);
+    ui->tableWidget->setColumnWidth(1,ui->tableWidget->width()/14);
+    ui->tableWidget->setColumnWidth(2,ui->tableWidget->width()/14);
+    ui->tableWidget->setColumnWidth(3,ui->tableWidget->width()/14*4);
+    ui->tableWidget->setColumnWidth(4,ui->tableWidget->width()/14*4);
+    ui->tableWidget->setColumnWidth(5,ui->tableWidget->width()/14);
+    ui->tableWidget->setColumnWidth(6,ui->tableWidget->width()/14);
 }
 
 void CFileOperatorDlg::setSecondModelAndStyle()
@@ -960,7 +1178,6 @@ void CFileOperatorDlg::showFileInfo(QString path)
         //model->appendRow(row);
         this->m_model->appendRow(row); //可以将一个model理解为一个二维表
     }
-    //ui->tableView->setModel(this->m_model); //用于更新数据 ,目前不需要
 }
 
 unsigned WINAPI CFileOperatorDlg::threadShowFileInfo(LPVOID arg)

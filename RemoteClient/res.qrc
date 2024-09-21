@@ -25,5 +25,7 @@
         <file>disk.png</file>
         <file>comboxDowm.png</file>
         <file>comboxUp.png</file>
+        <file>delete.png</file>
+        <file>deleteHover.png</file>
     </qresource>
 </RCC>
