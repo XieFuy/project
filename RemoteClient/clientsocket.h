@@ -26,6 +26,7 @@ public:
     WORD remoteRunFile(std::string& data);
     WORD deleteFile(std::string& data);
     CPacket downLoadFileFromRemote(std::string& data);
+    CPacket updataFileToRemote(std::string& data);
 private:
     SOCKET m_sockClient;
     SOCKADDR_IN m_sockClientAddr;

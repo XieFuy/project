@@ -61,7 +61,10 @@ void CWatchDlg::threadShowScreen()
         {         
             qDebug()<<"显示监控屏幕被监控到";
             //进行图片显示
-            QByteArray ba(this->m_ScreenImageDataBuf.data(),this->m_ScreenImageDataBuf.size());
+//            QByteArray ba(this->m_ScreenImageDataBuf.data(),this->m_ScreenImageDataBuf.size());
+            QByteArray ba(this->recvbuffer,this->bufferSize);
+            delete []this->recvbuffer;
+            this->recvbuffer = nullptr;
             QImage image;
             image.loadFromData(ba,"PNG");
             this->m_RemoteScreenHeight = image.height();

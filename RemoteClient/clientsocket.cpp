@@ -90,6 +90,21 @@ QVector<QStringList> CClientSocket::getRemoteFileInfo(QString currentPath)
     return result;
 }
 
+CPacket CClientSocket::updataFileToRemote(std::string& data)
+{
+   qDebug()<<"数据的长度："<<data.size();
+   if(data == "")
+   {
+       this->SendPacket(CPacket(5,nullptr,0));
+       this->DealCommand();
+       return this->m_packet;
+   }
+   this->SendPacket(CPacket(5,(const BYTE*)data.c_str(),data.size()));
+   this->DealCommand();
+   return this->m_packet;
+}
+
+
 BOOL CClientSocket::initSocketEnv()
 {
     WORD wVersionRequested;
@@ -145,8 +160,8 @@ BOOL CClientSocket::initSocket()
     memset(&this->m_sockClientAddr,0,sizeof(SOCKADDR_IN));
     this->m_sockClientAddr.sin_port = htons(9527);
     this->m_sockClientAddr.sin_family = AF_INET;
-  //  this->m_sockClientAddr.sin_addr.S_un.S_addr = inet_addr("192.168.232.128"); //服务端的ip地址
-    this->m_sockClientAddr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
+    this->m_sockClientAddr.sin_addr.S_un.S_addr = inet_addr("192.168.232.128"); //服务端的ip地址
+//    this->m_sockClientAddr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
     return TRUE;
 }
 
@@ -304,7 +319,9 @@ size_t  CClientSocket::SendPacket(CPacket packet)
   std::string data = "";
   packet.toByteData(data);
   CTestTool::Dump((const BYTE*)data.c_str(),data.size());
-  return send(this->m_sockClient,(const char*)data.c_str(),data.size(),0);
+  size_t size = send(this->m_sockClient,(const char*)data.c_str(),data.size(),0);
+  qDebug()<<"发送的数据长度为："<<size;
+  return size;
 }
 
 BOOL CClientSocket::ConnectToServerMouseEvent()

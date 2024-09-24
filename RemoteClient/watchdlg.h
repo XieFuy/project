@@ -29,6 +29,8 @@ public:
     ~CWatchDlg();
     BOOL m_isFull;//表示缓存中是否还有数据
     BOOL m_frameIsClosed;//TODO:写到这里，接着继续
+    char* recvbuffer = nullptr;
+    long long bufferSize = 0;
     std::vector<char> m_ScreenImageDataBuf; //存储图片数据的缓冲区
     std::vector<char> m_lastScreenImageDataBuf;//存储上一帧的图片数据缓冲区
     HANDLE m_Event;  //使用互斥事件来进行显示

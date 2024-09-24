@@ -147,9 +147,14 @@ void CClientContorler::threadSendWatchPacket()
         pClient->SendPacket(CPacket(7,nullptr,0));
         pClient->DealCommand();
         pClient->CloseSocket();
-        this->m_watchDlg->m_ScreenImageDataBuf.resize(pClient->getPacket().getData().size());
-        memset(this->m_watchDlg->m_ScreenImageDataBuf.data(),0,this->m_watchDlg->m_ScreenImageDataBuf.size());
-        memcpy(this->m_watchDlg->m_ScreenImageDataBuf.data(),pClient->getPacket().getData().c_str(),pClient->getPacket().getData().size()); //这里进行了共享资源的访问，需要进行互斥
+        this->m_watchDlg->bufferSize = pClient->getPacket().getData().size();
+        this->m_watchDlg->recvbuffer = new char[pClient->getPacket().getData().size()];
+        memset(this->m_watchDlg->recvbuffer,0,pClient->getPacket().getData().size());
+        memcpy(this->m_watchDlg->recvbuffer,pClient->getPacket().getData().c_str(),pClient->getPacket().getData().size());
+//        CTestTool::Dump((const BYTE*)this->m_watchDlg->recvbuffer,pClient->getPacket().getData().size());
+//        this->m_watchDlg->m_ScreenImageDataBuf.resize(pClient->getPacket().getData().size());
+//        memset(this->m_watchDlg->m_ScreenImageDataBuf.data(),0,this->m_watchDlg->m_ScreenImageDataBuf.size());
+//        memcpy(this->m_watchDlg->m_ScreenImageDataBuf.data(),pClient->getPacket().getData().c_str(),pClient->getPacket().getData().size()); //这里进行了共享资源的访问，需要进行互斥
         this->m_watchDlg->m_isFull = TRUE;//这里进行了共享资源的访问，需要进行互斥锁
         SetEvent(this->m_watchDlg->m_Event);
         ResetEvent(this->m_watchDlg->m_Event);
@@ -174,6 +179,12 @@ WORD CClientContorler::remoteRunFile(std::string& data)
 {
     CClientSocket* pClient = CClientSocket::getInstance();
     return pClient->remoteRunFile(data);
+}
+
+CPacket CClientContorler::upDataFileToRemote(std::string& data)
+{
+    CClientSocket* pClient = CClientSocket::getInstance();
+    return pClient->updataFileToRemote(data);
 }
 
 CClientContorler* CClientContorler::m_instanse = nullptr;
