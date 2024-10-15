@@ -18,7 +18,9 @@ CWatchDlg::CWatchDlg(QWidget *parent) :
     this->m_isMouseMove.store(false);
     this->threshold = 200;
     this->m_timer = new QTimer(this);
-
+    this->m_isUsed.store(false);
+    this->m_Mutex = CreateMutex(nullptr,FALSE,nullptr);
+    this->m_num.store(0);
     QObject::connect(this,&CWatchDlg::rejected,[=](){
         qDebug()<<"监控对话框被退出";
         delete this;
@@ -36,8 +38,6 @@ CWatchDlg::CWatchDlg(QWidget *parent) :
 
 
     });
-
-
     //启动屏幕画面显示线程
     this->m_threadShowScreen = (HANDLE)_beginthreadex(nullptr,0,&CWatchDlg::threadEntryShowScreen,this,0,nullptr);
 }
@@ -61,25 +61,49 @@ void CWatchDlg::threadShowScreen()
         {         
             qDebug()<<"显示监控屏幕被监控到";
             //进行图片显示
-//            QByteArray ba(this->m_ScreenImageDataBuf.data(),this->m_ScreenImageDataBuf.size());
-            QByteArray ba(this->recvbuffer,this->bufferSize);
-            delete []this->recvbuffer;
-            this->recvbuffer = nullptr;
-            QImage image;
-            image.loadFromData(ba,"PNG");
-            this->m_RemoteScreenHeight = image.height();
-            this->m_RemoteScreenWidth = image.width();
-            ui->label->setPixmap(QPixmap::fromImage(image));
-            ui->label->setScaledContents(true);
+           // this->InitImageAndShow();
+            _beginthreadex(nullptr,0,&CWatchDlg::threadInitImageAndShow,this,0,nullptr);
             SetEvent(this->m_Event);
             ResetEvent(this->m_Event);
         }
     }
 }
 
+void CWatchDlg::InitImageAndShow()
+{
+    if(this->m_isUsed.load() == true)
+    {
+        delete []this->recvbuffer;
+        this->recvbuffer = nullptr;
+        return;
+    }
+    this->m_isUsed.store(true);
+//    WaitForSingleObject(this->m_Mutex,INFINITE);
+    QByteArray ba(this->recvbuffer,this->bufferSize);
+    delete []this->recvbuffer;
+    this->recvbuffer = nullptr;
+    QImage image;
+    image.loadFromData(ba,"PNG");
+    this->m_RemoteScreenHeight = image.height();
+    this->m_RemoteScreenWidth = image.width();
+    ui->label->setPixmap(QPixmap::fromImage(image));
+    ui->label->setScaledContents(true);
+//    ReleaseMutex(this->m_Mutex);
+    this->m_isUsed.store(false);
+}
+
+unsigned WINAPI CWatchDlg::threadInitImageAndShow(LPVOID arg)
+{
+    CWatchDlg* thiz = (CWatchDlg*)arg;
+    thiz->InitImageAndShow();
+    _endthreadex(0);
+    return 0;
+}
+
 //左键按下和右键按下
 void CWatchDlg::mousePressEvent(QMouseEvent *event)
 {
+
      QPoint point = event->pos();
      if(event->button() == Qt::LeftButton)
      {
@@ -97,13 +121,14 @@ void CWatchDlg::mousePressEvent(QMouseEvent *event)
          CPacket packet(10,(const BYTE*)buffer,sizeof(CMouseEvent));
 
          CClientSocket* pSocket = CClientSocket::getInstance();
-         pSocket->initSocketMouseEvent();
+//         pSocket->initSocketMouseEvent();
          pSocket->SendPacketMouseEvent(packet);
-         WORD ret =  pSocket->DealCommandMouseEvent();
-         if(ret == 10)
-         {
-             qDebug()<<"鼠标左键按下执行成功";
-         }
+//         WORD ret =  pSocket->DealCommandMouseEvent();
+//         if(ret == 10)
+//         {
+//             qDebug()<<"鼠标左键按下执行成功";
+//         }
+          pSocket->CloseSocketMouseEvent();
      }
      if(event->button() == Qt::RightButton)
      {
@@ -121,19 +146,22 @@ void CWatchDlg::mousePressEvent(QMouseEvent *event)
          CPacket packet(10,(const BYTE*)buffer,sizeof(CMouseEvent));
 
          CClientSocket* pSocket = CClientSocket::getInstance();
-         pSocket->initSocketMouseEvent();
+//         pSocket->initSocketMouseEvent();
          pSocket->SendPacketMouseEvent(packet);
-         WORD ret =  pSocket->DealCommandMouseEvent();
-         if(ret == 10)
-         {
-             qDebug()<<"鼠标右键按下执行成功";
-         }
+//         WORD ret =  pSocket->DealCommandMouseEvent();
+//         if(ret == 10)
+//         {
+//             qDebug()<<"鼠标右键按下执行成功";
+//         }
+          pSocket->CloseSocketMouseEvent();
      }
+
 }
 
 //左键弹起和右键弹起
 void CWatchDlg::mouseReleaseEvent(QMouseEvent*event)
 {
+
     QPoint point = event->pos();
     if(event->button() == Qt::LeftButton)
     {
@@ -151,13 +179,14 @@ void CWatchDlg::mouseReleaseEvent(QMouseEvent*event)
         CPacket packet(10,(const BYTE*)buffer,sizeof(CMouseEvent));
 
         CClientSocket* pSocket = CClientSocket::getInstance();
-        pSocket->initSocketMouseEvent();
+       // pSocket->initSocketMouseEvent();
         pSocket->SendPacketMouseEvent(packet);
-        WORD ret =  pSocket->DealCommandMouseEvent();
-        if(ret == 10)
-        {
-            qDebug()<<"鼠标左键弹起执行成功";
-        }
+//        WORD ret =  pSocket->DealCommandMouseEvent();
+//        if(ret == 10)
+//        {
+//            qDebug()<<"鼠标左键弹起执行成功";
+//        }
+         pSocket->CloseSocketMouseEvent();
     }
     if(event->button() == Qt::RightButton)
     {
@@ -175,19 +204,32 @@ void CWatchDlg::mouseReleaseEvent(QMouseEvent*event)
         CPacket packet(10,(const BYTE*)buffer,sizeof(CMouseEvent));
 
         CClientSocket* pSocket = CClientSocket::getInstance();
-        pSocket->initSocketMouseEvent();
+        //pSocket->initSocketMouseEvent();
         pSocket->SendPacketMouseEvent(packet);
-        WORD ret =  pSocket->DealCommandMouseEvent();
-        if(ret == 10)
-        {
-            qDebug()<<"鼠标右键弹起执行成功";
-        }
+//        WORD ret =  pSocket->DealCommandMouseEvent();
+//        if(ret == 10)
+//        {
+//            qDebug()<<"鼠标右键弹起执行成功";
+//        }
+         pSocket->CloseSocketMouseEvent();
     }
+
 }
 
 //TODO:执行鼠标操作的时候应该进行阻塞控制层的屏幕显示
 void CWatchDlg::mouseMoveEvent(QMouseEvent* event)
-{    
+{
+        if(this->m_num.load() < 13)
+        {
+            this->m_num.store(this->m_num.load() + 1);
+            return ;
+        }
+
+        if(this->m_num.load() >= 13)
+        {
+            this->m_num.store(0);
+        }
+
         qDebug()<<"鼠标移动事件执行！";
         this->lastMousePos = event->pos();
         this->PointToClient(this->lastMousePos);
@@ -204,12 +246,13 @@ void CWatchDlg::mouseMoveEvent(QMouseEvent* event)
         CPacket pack(10,(const BYTE*)buffer,sizeof(buffer));
 
         CClientSocket* pSocket = CClientSocket::getInstance();
+
         pSocket->SendPacketMouseEvent(pack);
-        WORD ret =  pSocket->DealCommandMouseEvent();
-        if(ret == 10)
-        {
-            qDebug()<<"鼠标移动数据包成功发送";
-        }
+        //        WORD ret =  pSocket->DealCommandMouseEvent();
+        //        if(ret == 10)
+        //        {
+        //            qDebug()<<"鼠标移动数据包成功发送";
+        //        }
         pSocket->CloseSocketMouseEvent();
 }
 

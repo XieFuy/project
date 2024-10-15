@@ -12,7 +12,7 @@ class CClientSocket
 public:
     static CClientSocket* getInstance();
     size_t SendPacket(CPacket packet); //进行发送数据包 返回发送数据包的长度
-    size_t SendPacketMouseEvent(CPacket packet);
+    size_t SendPacketMouseEvent(CPacket& packet);
     WORD DealCommand(); //处理服务端发送过来的包数据
     WORD DealCommandMouseEvent();
     void CloseSocket(); //关闭套接字
@@ -27,6 +27,7 @@ public:
     WORD deleteFile(std::string& data);
     CPacket downLoadFileFromRemote(std::string& data);
     CPacket updataFileToRemote(std::string& data);
+    SOCKET& getSocketClient();
 private:
     SOCKET m_sockClient;
     SOCKADDR_IN m_sockClientAddr;

@@ -33,6 +33,7 @@ public:
     long long bufferSize = 0;
     std::vector<char> m_ScreenImageDataBuf; //存储图片数据的缓冲区
     std::vector<char> m_lastScreenImageDataBuf;//存储上一帧的图片数据缓冲区
+    HANDLE m_Mutex;
     HANDLE m_Event;  //使用互斥事件来进行显示
     HANDLE m_CloseEvent; //监视窗口关闭时的互斥事件
     HANDLE m_MouseEventMutex; //进行处理鼠标和屏幕显示的互斥事件
@@ -50,10 +51,15 @@ public:
 signals:
     void closeDlg(); //向外发送关闭的信号
 private:
+    std::atomic<bool> m_isUsed; //占有的显示当前帧，没有占有的丢弃
     HANDLE m_threadShowScreen; //显示监控画面线程
     static unsigned WINAPI threadEntryShowScreen(LPVOID arg); //显示监控画面入口线程函数
+    static unsigned WINAPI threadInitImageAndShow(LPVOID arg); //进行生成图像信息和显示到label中
     void threadShowScreen();
+    void InitImageAndShow();
     Ui::CWatchDlg *ui;
+    QPoint m_lastPoint;
+    std::atomic<int> m_num;
 };
 
 #endif // WATCHDLG_H

@@ -126,10 +126,7 @@ unsigned WINAPI CClientContorler::threadEntrySendWatchPacket(LPVOID arg)
     return 0;
 }
 
-void CClientContorler::SendMouseEventPacket(QPoint point)
-{
-
-}
+void CClientContorler::SendMouseEventPacket(QPoint point){}
 
  std::string CClientContorler::getRemoteDiskInfo()
  {
@@ -140,21 +137,26 @@ void CClientContorler::SendMouseEventPacket(QPoint point)
 void CClientContorler::threadSendWatchPacket()
 {
     CClientSocket* pClient = CClientSocket::getInstance();
-    Sleep(100);  //休眠进行界面先进行显示
+    Sleep(500);  //休眠进行界面先进行显示
     while(this->m_watchDlg->m_frameIsClosed == FALSE )
     {
+        Sleep(100);
         qDebug()<<"屏幕显示发送数据执行！";
         pClient->SendPacket(CPacket(7,nullptr,0));
-        pClient->DealCommand();
+        //pClient->DealCommand(); //接收到的信息不对
+        char* recvBuffer = new char[1024000]; //1MB的缓冲区，确保一帧不能大于这个缓冲区
+        memset(recvBuffer,0,1024000);
+        size_t ret =  recv(pClient->getSocketClient(),recvBuffer,1024000,0);
         pClient->CloseSocket();
-        this->m_watchDlg->bufferSize = pClient->getPacket().getData().size();
-        this->m_watchDlg->recvbuffer = new char[pClient->getPacket().getData().size()];
-        memset(this->m_watchDlg->recvbuffer,0,pClient->getPacket().getData().size());
-        memcpy(this->m_watchDlg->recvbuffer,pClient->getPacket().getData().c_str(),pClient->getPacket().getData().size());
-//        CTestTool::Dump((const BYTE*)this->m_watchDlg->recvbuffer,pClient->getPacket().getData().size());
-//        this->m_watchDlg->m_ScreenImageDataBuf.resize(pClient->getPacket().getData().size());
-//        memset(this->m_watchDlg->m_ScreenImageDataBuf.data(),0,this->m_watchDlg->m_ScreenImageDataBuf.size());
-//        memcpy(this->m_watchDlg->m_ScreenImageDataBuf.data(),pClient->getPacket().getData().c_str(),pClient->getPacket().getData().size()); //这里进行了共享资源的访问，需要进行互斥
+//        this->m_watchDlg->bufferSize = pClient->getPacket().getData().size();
+        this->m_watchDlg->bufferSize = ret;
+//        this->m_watchDlg->recvbuffer = new char[pClient->getPacket().getData().size()];
+        this->m_watchDlg->recvbuffer = new char[ret];
+//        memset(this->m_watchDlg->recvbuffer,0,pClient->getPacket().getData().size());
+        memset(this->m_watchDlg->recvbuffer,0,ret);
+//        memcpy(this->m_watchDlg->recvbuffer,pClient->getPacket().getData().c_str(),pClient->getPacket().getData().size());
+        memcpy(this->m_watchDlg->recvbuffer,recvBuffer,ret);
+        delete[] recvBuffer;
         this->m_watchDlg->m_isFull = TRUE;//这里进行了共享资源的访问，需要进行互斥锁
         SetEvent(this->m_watchDlg->m_Event);
         ResetEvent(this->m_watchDlg->m_Event);

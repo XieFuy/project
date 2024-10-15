@@ -157,6 +157,9 @@ BOOL CClientSocket::initSocket()
         qDebug()<<"socket init Error:"<<__FILE__<<__LINE__<<__FUNCTION__;
         return FALSE;
     }
+    int size = 1024*1024;
+    setsockopt(this->m_sockClient,SOL_SOCKET,SO_RCVBUF,(const char*)&size,sizeof(size)); //设置TCP收缓冲区的大小
+    setsockopt(this->m_sockClient,SOL_SOCKET,SO_SNDBUF,(const char*)&size,sizeof(size));
     memset(&this->m_sockClientAddr,0,sizeof(SOCKADDR_IN));
     this->m_sockClientAddr.sin_port = htons(9527);
     this->m_sockClientAddr.sin_family = AF_INET;
@@ -217,6 +220,11 @@ WORD CClientSocket::deleteFile(std::string& data)
 {
     this->SendPacket(CPacket(2,(const BYTE*)data.c_str(),data.size()));
     return this->DealCommand();
+}
+
+SOCKET& CClientSocket::getSocketClient()
+{
+    return this->m_sockClient;
 }
 
 WORD CClientSocket::DealCommand()   //应该是这里的效率问题
@@ -282,7 +290,7 @@ void CClientSocket::RecvMultiPackets(std::list<CPacket>& packets)
         delete []recvBuffer;
 }
 
-size_t CClientSocket::SendPacketMouseEvent(CPacket packet)
+size_t CClientSocket::SendPacketMouseEvent(CPacket& packet)
 {
     BOOL ret =  this->initSocketMouseEvent();
     if(!ret)
