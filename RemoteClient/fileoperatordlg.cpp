@@ -622,7 +622,7 @@ CFileOperatorDlg::CFileOperatorDlg(QWidget *parent) :
                 }
             }
         });
-        timer->start(0.0001);
+        timer->start(0.001);
     });
 }
 
@@ -691,15 +691,21 @@ void CFileOperatorDlg::readFileData()
     long long alReadySend = 0;
     while(alReadySend < fileSize)
     {
-        char* buffer = new char[614400];
-        size_t ret = fread(buffer,1,614400,pFile);
+        char* buffer = new char[1024000];
+        memset(buffer,0,1024000);
+        size_t ret = fread(buffer,1,1024000,pFile);
         qDebug()<<"ret: "<<ret;
         if(ret > 0)
         {
             alReadySend += ret;
-            std::string strData(buffer,ret);
-            qDebug()<<"strlen(buffer): "<<strlen(buffer)<<"std::string长度： "<<strData.size();
-            pCtrl->upDataFileToRemote(strData);//发的是文件内容
+            char* packet = new char[ret];
+            size_t nSize = ret;
+            memset(packet,0,ret);
+            std::string str = "";
+            pCtrl->upDataFileToRemote(str,packet,&nSize);//发的是文件内容
+            delete []packet;
+//            std::string strData(buffer,ret);
+//            qDebug()<<"strlen(buffer): "<<strlen(buffer)<<"std::string长度： "<<strData.size();
             long double tempFileSize = fileSize;
             long double tempAlReadySend = alReadySend;
             this->m_progress =(tempAlReadySend /tempFileSize) * 100;
@@ -710,6 +716,7 @@ void CFileOperatorDlg::readFileData()
     fclose(pFile);
     qDebug()<<"alReadySend: "<<alReadySend<<" size: "<<fileSize;
     //发送结束数据包
+    Sleep(2);
     std::string tempStr = "";
     pCtrl->upDataFileToRemote(tempStr);
 }
@@ -766,26 +773,33 @@ void CFileOperatorDlg::writeFileData(QString& directory,std::list<CPacket>& resu
     std::string temp = tempFilePath.toUtf8().data();
     std::wstring wTemp = this->multiBytesToWideChar(temp);
 
+    FILE* pFile = _wfopen(wTemp.data(),L"wb+");
+    if(pFile == nullptr)
+    {
+        qDebug()<<"文件写入失败:  "<<__FILE__<<__LINE__<<__FUNCTION__<<strerror(errno);
+        return ;
+    }
+    std::string temp2 = filePath.toUtf8().data();
     //进行循环写入文件
     while(alReadyRecv < lenght)
     {
-        //进行获取到文件数据后进行个写入文件
-        FILE* pFile = _wfopen(wTemp.data(),L"ab+");
-        if(pFile == nullptr)
-        {
-            qDebug()<<"文件写入失败:  "<<__FILE__<<__LINE__<<__FUNCTION__<<strerror(errno);
-            return ;
-        }
-        std::string temp = filePath.toUtf8().data();
-        this->m_packet =  pCtrl->downLoadFileFromRemote(temp);
-        size_t size =   fwrite(this->m_packet.getData().c_str(),1,this->m_packet.getData().size(),pFile);
-        fclose(pFile);
+        //进行获取到文件数据后进行个写入文件   
+        Sleep(1);
+        char* packetBuffer = new char[1024000];
+        memset(packetBuffer,0,1024000);
+        size_t dataSize = 0;
+        pCtrl->downLoadFileFromRemote(temp2,packetBuffer,&dataSize);
+        size_t size =   fwrite(packetBuffer,1,dataSize,pFile);
+        //this->m_packet =  pCtrl->downLoadFileFromRemote(temp);
+//        size_t size =   fwrite(this->m_packet.getData().c_str(),1,this->m_packet.getData().size(),pFile);
+        delete []packetBuffer;
         alReadyRecv += size;
         long double tempLenght = lenght;
         long double tempAlreadyRecv = alReadyRecv;
         this->m_progress = (tempAlreadyRecv / tempLenght) * 100;
         WaitForSingleObject(this->m_event3,INFINITE);
     }  
+    fclose(pFile);
 }
 
 void CFileOperatorDlg::addDownLoadInfo(QString& filePath,QString& directory,QString type)

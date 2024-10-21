@@ -33,8 +33,8 @@ public:
     QVector<QStringList> getRemoteFileInfo(QString currentPath);
     WORD remoteRunFile(std::string& data);
     WORD deleteFile(std::string& data);
-    CPacket downLoadFileFromRemote(std::string& data); //本地主机从远程主机下载文件
-    CPacket upDataFileToRemote(std::string& data);//本地主机向远程主机传输文件
+    CPacket downLoadFileFromRemote(std::string& data,char* packetBuffer = nullptr,size_t* nSize = nullptr); //本地主机从远程主机下载文件
+    CPacket upDataFileToRemote(std::string& data,char* packetBuffer = nullptr,size_t* nSize = nullptr);//本地主机向远程主机传输文件
 private:
     CWatchDlg* m_watchDlg;
     QApplication* m_a;

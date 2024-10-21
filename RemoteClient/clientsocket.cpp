@@ -90,14 +90,30 @@ QVector<QStringList> CClientSocket::getRemoteFileInfo(QString currentPath)
     return result;
 }
 
-CPacket CClientSocket::updataFileToRemote(std::string& data)
+CPacket CClientSocket::updataFileToRemote(std::string& data,char* packetBuffer,size_t* nSize)
 {
    qDebug()<<"数据的长度："<<data.size();
-   if(data == "")
+   if(data == "" && packetBuffer == nullptr && nSize == nullptr)
    {
        this->SendPacket(CPacket(5,nullptr,0));
        this->DealCommand();
        return this->m_packet;
+   }
+   if(packetBuffer != nullptr && nSize != nullptr)
+   {
+       //const char* temp = "1";
+       this->SendPacket(CPacket(5,(const BYTE*)packetBuffer,*nSize));
+       //Sleep(10);
+//       int ret = send(this->m_sockClient,packetBuffer,*nSize,0);
+//       qDebug()<<"发送出去的字节数："<<ret;
+//       char buffer[2];
+//       ret =  recv(this->m_sockClient,buffer,1,0); //利用recv进行阻塞 ,卡住了
+
+//       if(ret == 1)
+//       {
+//         qDebug()<<"接收正确。";
+//       }
+       return CPacket(0,nullptr,0);
    }
    this->SendPacket(CPacket(5,(const BYTE*)data.c_str(),data.size()));
    this->DealCommand();
@@ -163,8 +179,8 @@ BOOL CClientSocket::initSocket()
     memset(&this->m_sockClientAddr,0,sizeof(SOCKADDR_IN));
     this->m_sockClientAddr.sin_port = htons(9527);
     this->m_sockClientAddr.sin_family = AF_INET;
-    this->m_sockClientAddr.sin_addr.S_un.S_addr = inet_addr("192.168.232.128"); //服务端的ip地址
-//    this->m_sockClientAddr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
+//    this->m_sockClientAddr.sin_addr.S_un.S_addr = inet_addr("192.168.232.128"); //服务端的ip地址
+    this->m_sockClientAddr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
     return TRUE;
 }
 
@@ -378,14 +394,27 @@ BOOL CClientSocket::ConnectToServer()
      return this->m_packet.getData();
  }
 
-CPacket CClientSocket::downLoadFileFromRemote(std::string& data)
+CPacket CClientSocket::downLoadFileFromRemote(std::string& data,char* packetBuffer ,size_t* nSize)
  {
      //data是选择下载远程文件的路径信息
      //先发送下载请求数据包
      //进行发送获取文件大小的数据包
-     this->SendPacket(CPacket(3,(const BYTE*)data.c_str(),data.size())); //发送空包进行获取文件大小
-     this->DealCommand();
-     return  this->m_packet;
+    this->SendPacket(CPacket(3,(const BYTE*)data.c_str(),data.size())); //发送空包进行获取文件大小
+    if(packetBuffer == nullptr && nSize == nullptr)
+    {
+        this->DealCommand();
+    }else if(packetBuffer != nullptr && nSize != nullptr)
+    {
+         //直接接收
+        int ret =  recv(this->m_sockClient,packetBuffer,1024000,0);
+        qDebug()<<"接收到的字节数: "<<ret;
+        if(ret > 0)
+        {
+            *nSize = ret;
+        }
+        return CPacket(0,nullptr,0);
+    }
+    return  this->m_packet;
  }
 
 CClientSocket* CClientSocket::m_instance = nullptr;

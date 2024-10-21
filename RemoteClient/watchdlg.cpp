@@ -219,13 +219,13 @@ void CWatchDlg::mouseReleaseEvent(QMouseEvent*event)
 //TODO:执行鼠标操作的时候应该进行阻塞控制层的屏幕显示
 void CWatchDlg::mouseMoveEvent(QMouseEvent* event)
 {
-        if(this->m_num.load() < 13)
+        if(this->m_num.load() < 20)
         {
             this->m_num.store(this->m_num.load() + 1);
             return ;
         }
 
-        if(this->m_num.load() >= 13)
+        if(this->m_num.load() >= 20)
         {
             this->m_num.store(0);
         }

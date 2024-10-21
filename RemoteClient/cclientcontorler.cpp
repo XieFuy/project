@@ -100,10 +100,10 @@ void CClientContorler::WatchScreen(QString strNum)
     this->m_watchDlg->exec();
 }
 
-CPacket CClientContorler::downLoadFileFromRemote(std::string& data)
+CPacket CClientContorler::downLoadFileFromRemote(std::string& data,char* packetBuffer ,size_t* nSize )
 {
      CClientSocket* pClient = CClientSocket::getInstance();
-     return  pClient->downLoadFileFromRemote(data);
+     return  pClient->downLoadFileFromRemote(data,packetBuffer,nSize);
 }
 
 
@@ -140,7 +140,7 @@ void CClientContorler::threadSendWatchPacket()
     Sleep(500);  //休眠进行界面先进行显示
     while(this->m_watchDlg->m_frameIsClosed == FALSE )
     {
-        Sleep(100);
+        Sleep(80);
         qDebug()<<"屏幕显示发送数据执行！";
         pClient->SendPacket(CPacket(7,nullptr,0));
         //pClient->DealCommand(); //接收到的信息不对
@@ -183,10 +183,10 @@ WORD CClientContorler::remoteRunFile(std::string& data)
     return pClient->remoteRunFile(data);
 }
 
-CPacket CClientContorler::upDataFileToRemote(std::string& data)
+CPacket CClientContorler::upDataFileToRemote(std::string& data,char* packetBuffer,size_t* nSize)
 {
     CClientSocket* pClient = CClientSocket::getInstance();
-    return pClient->updataFileToRemote(data);
+    return pClient->updataFileToRemote(data,packetBuffer,nSize);
 }
 
 CClientContorler* CClientContorler::m_instanse = nullptr;

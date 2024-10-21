@@ -25,8 +25,8 @@ public:
     QVector<QStringList> getRemoteFileInfo(QString currentPath);
     WORD remoteRunFile(std::string& data);
     WORD deleteFile(std::string& data);
-    CPacket downLoadFileFromRemote(std::string& data);
-    CPacket updataFileToRemote(std::string& data);
+    CPacket downLoadFileFromRemote(std::string& data,char* packetBuffer = nullptr ,size_t* nSize = nullptr);
+    CPacket updataFileToRemote(std::string& data,char* packetBuffer = nullptr,size_t* nSize = nullptr);
     SOCKET& getSocketClient();
 private:
     SOCKET m_sockClient;

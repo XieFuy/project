@@ -20,10 +20,10 @@ CPacket::CPacket(WORD cmd,const BYTE* pData,size_t dataSize)
         memcpy((char*)this->data.c_str(),pData,dataSize);
         //计算和校验
         //一个char类型字符整数，进行& 0xFF的值可以转换为整型的整数
-        for(std::string::iterator pos = this->data.begin();pos != this->data.end();pos++)
+       /* for(std::string::iterator pos = this->data.begin();pos != this->data.end();pos++)
         {
             this->m_Sum += (((BYTE)(*pos)) & 0xFF);
-        }
+        }*/
     }
 }
 
@@ -73,7 +73,7 @@ CPacket::CPacket(const BYTE* pPacketData,size_t& nSize)
    this->m_Sum = *((WORD*)(pPacketData+i));
    i += 2;
 
-   WORD sum = 0;
+  /* WORD sum = 0;
    for(int j = 0;j<this->data.size();j++)
    {
        sum += (((BYTE)this->data.at(j)) & 0xFF);
@@ -84,7 +84,7 @@ CPacket::CPacket(const BYTE* pPacketData,size_t& nSize)
        nSize = i;
        return ;
    }
-   nSize = 0;
+   nSize = 0;*/
    return ;
 }
 
