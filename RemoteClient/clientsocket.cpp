@@ -93,7 +93,7 @@ QVector<QStringList> CClientSocket::getRemoteFileInfo(QString currentPath)
 CPacket CClientSocket::updataFileToRemote(std::string& data,char* packetBuffer,size_t* nSize)
 {
    qDebug()<<"数据的长度："<<data.size();
-   if(data == "" && packetBuffer == nullptr && nSize == nullptr)
+   if(data == "" && packetBuffer == nullptr && nSize == nullptr) //发送结束包
    {
        this->SendPacket(CPacket(5,nullptr,0));
        this->DealCommand();
@@ -101,21 +101,22 @@ CPacket CClientSocket::updataFileToRemote(std::string& data,char* packetBuffer,s
    }
    if(packetBuffer != nullptr && nSize != nullptr)
    {
-       //const char* temp = "1";
-       this->SendPacket(CPacket(5,(const BYTE*)packetBuffer,*nSize));
-       //Sleep(10);
-//       int ret = send(this->m_sockClient,packetBuffer,*nSize,0);
-//       qDebug()<<"发送出去的字节数："<<ret;
-//       char buffer[2];
-//       ret =  recv(this->m_sockClient,buffer,1,0); //利用recv进行阻塞 ,卡住了
+       const char* temp = "1";
+       this->SendPacket(std::move(CPacket(5,(const BYTE*)temp,1)));
+       Sleep(10);
+       int ret = send(this->m_sockClient,packetBuffer,*nSize,0);
+       qDebug()<<"发送出去的字节数："<<ret;
+       char buffer[2];
+       ret =  recv(this->m_sockClient,buffer,1,0); //利用recv进行阻塞 ,卡住了
 
-//       if(ret == 1)
-//       {
-//         qDebug()<<"接收正确。";
-//       }
+       if(ret == 1)
+       {
+         qDebug()<<"接收正确。";
+       }
+       //this->DealCommand();
        return CPacket(0,nullptr,0);
    }
-   this->SendPacket(CPacket(5,(const BYTE*)data.c_str(),data.size()));
+   this->SendPacket(CPacket(5,(const BYTE*)data.c_str(),data.size())); //发送请求包
    this->DealCommand();
    return this->m_packet;
 }
@@ -179,8 +180,8 @@ BOOL CClientSocket::initSocket()
     memset(&this->m_sockClientAddr,0,sizeof(SOCKADDR_IN));
     this->m_sockClientAddr.sin_port = htons(9527);
     this->m_sockClientAddr.sin_family = AF_INET;
-//    this->m_sockClientAddr.sin_addr.S_un.S_addr = inet_addr("192.168.232.128"); //服务端的ip地址
-    this->m_sockClientAddr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
+    this->m_sockClientAddr.sin_addr.S_un.S_addr = inet_addr("192.168.232.128"); //服务端的ip地址
+//    this->m_sockClientAddr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
     return TRUE;
 }
 
@@ -342,7 +343,7 @@ size_t  CClientSocket::SendPacket(CPacket packet)
   }
   std::string data = "";
   packet.toByteData(data);
-  CTestTool::Dump((const BYTE*)data.c_str(),data.size());
+ // CTestTool::Dump((const BYTE*)data.c_str(),data.size());
   size_t size = send(this->m_sockClient,(const char*)data.c_str(),data.size(),0);
   qDebug()<<"发送的数据长度为："<<size;
   return size;

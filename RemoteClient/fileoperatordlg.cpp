@@ -701,7 +701,9 @@ void CFileOperatorDlg::readFileData()
             char* packet = new char[ret];
             size_t nSize = ret;
             memset(packet,0,ret);
+            memcpy(packet,buffer,ret);
             std::string str = "";
+            Sleep(2);
             pCtrl->upDataFileToRemote(str,packet,&nSize);//发的是文件内容
             delete []packet;
 //            std::string strData(buffer,ret);
